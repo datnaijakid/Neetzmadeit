@@ -1,0 +1,80 @@
+{% extends 'base.html' %} {% block title %}Home - Neetzmadeit{% endblock %} 
+{%block content %}
+<!--- ......Featured Items Section............. -->
+<section class="py-5 mb-5">
+  <div class="container">
+    
+    <h1 class="text-center mb-5">Featured items</h1>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      
+      <div class="col">
+        <div class="card h-100 shadow-lg">
+          <img src="../static/assets/img/catears.jpg" class="card-img-top" alt="Item 1" style="height: 250px; object-fit: cover;">
+          <div class="card-body text-center">
+            <h5 class="card-title">Cat ear</h5>
+            <p class="card-text">$19.99</p>
+            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100 shadow-lg">
+          <img src="../static/assets/img/keilatop.jpg" class="card-img-top" alt="Item 2" style="height: 250px; object-fit: cover;">
+          <div class="card-body text-center">
+            <h5 class="card-title">Keila Top</h5>
+            <p class="card-text">$29.99</p>
+            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100 shadow-lg">
+          <img src="../static/assets/img/keychains.jpg" class="card-img-top" alt="Item 3" style="height: 250px; object-fit: cover;">
+          <div class="card-body text-center">
+            <h5 class="card-title">Keychains</h5>
+            <p class="card-text">$39.99</p>
+            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+      <a href="products.html" class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold">Shop all</a>
+    </div>
+
+  </div>
+</section>
+<!--- ......About Me Section............. -->
+<section class="py-5">
+  <div class="container">
+    <div class="card mb-3 border-0 bg-light rounded-3 overflow-hidden">
+      <div class="row g-0">
+        
+        <div class="col-md-4 h-100">
+          <img 
+            src="../static/assets/img/mylogo 2.png" 
+            class="img-fluid w-100 h-100" 
+            alt="Neetzmadeit Logo" 
+            style="object-fit: cover; min-height: 100%;"
+          >
+        </div>
+        
+        <div class="col-md-8 d-flex align-items-center">
+          <div class="card-body p-5 text-center">
+            <h1 class="display-5 fw-bold mb-4">About me</h1>
+            <p class="fs-4 mb-4">Hi guys! I'm Nita and I run a small business dedicated to creating unique and handmade items that bring joy and creativity to your everyday life. From custom accessories to personalized gifts, I take pride in my craftsmanship and attention to detail. Explore my collection and find something special made just for you!</p>
+            <a href="about.html" class="btn btn-success btn-lg rounded-pill px-5 py-2 fw-bold">Learn More</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<!--- ......Custom order section............. -->
+{% endblock %}

@@ -1,0 +1,47 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #E8E0D5;
+    color: #5B7D60;
+}
+
+.btn-success {
+    background-color: rgb(224, 156, 167);
+}
+
+.btn-success:hover {
+    background-color: rgb(218, 101, 121);
+}
+
+.nav-link {
+    color: #5B7D60;;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.nav-link:hover {
+    color: #316839;
+    font-weight: 700;
+}
+
+.nav-link.active{
+    color: #316839 !important;
+}
+
+.title {
+    font-family: 'Brush Script MT', cursive;
+    font-size: 3rem;
+    color: #5B7D60;
+    text-shadow: 2px 2px #D9CAB3;
+    font-weight: 500;
+}
+
+.card-body {
+    background-color: #F7F1E1;
+    color: #5B7D60;
+}
