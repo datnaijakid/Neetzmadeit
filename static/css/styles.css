@@ -39,9 +39,39 @@ body {
     color: #5B7D60;
     text-shadow: 2px 2px #D9CAB3;
     font-weight: 500;
+    
+}
+
+.title:hover,
+.navbar-brand.title:hover {
+    color: #5B7D60;
+    text-decoration: none;
 }
 
 .card-body {
     background-color: #F7F1E1;
     color: #5B7D60;
+}
+
+/* Form input styling */
+.form-control {
+    background-color: #E8E0D5;
+    color: #5B7D60;
+    border: 1px solid #D9CAB3;
+}
+
+.form-control:focus {
+    background-color: #F0EAE0;
+    color: #5B7D60;
+    border-color: #5B7D60;
+    box-shadow: 0 0 0 0.2rem rgba(91, 125, 96, 0.25);
+}
+
+.form-control::placeholder {
+    color: #9BB09F;
+}
+
+/* Textarea with moderate border-radius */
+textarea.form-control {
+    border-radius: 1rem;
 }

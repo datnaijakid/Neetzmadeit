@@ -1,0 +1,82 @@
+{% extends 'base.html' %}{% block title %}Neetzmadeit - Contact{% endblock %} {%
+block content %}
+<section class="py-5">
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div
+      class="alert alert-{{ category }} alert-dismissible fade show"
+      role="alert"
+    >
+      {{ message }}
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert"
+        aria-label="Close"
+      ></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+    <div class="row align-items-start">
+      <div class="col-md-6 mb-4 text-center">
+        <h1 class="mb-3">Contact Us</h1>
+        <p>
+          Interested in a custom order? I create personalized pieces tailored to
+          your style and needs. Provide details about colors, sizes, materials,
+          and any reference images in your message and I'll get back to you with
+          availability and a quote.
+        </p>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('contact') }}">
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="name"
+                  name="name"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="message" class="form-label">Message</label>
+                <textarea
+                  class="form-control rounded px-3 shadow-sm"
+                  id="message"
+                  name="message"
+                  rows="6"
+                  placeholder="Write your message here..."
+                  required
+                ></textarea>
+              </div>
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-success rounded-pill px-4 fw-bold"
+                >
+                  Send Message
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
