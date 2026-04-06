@@ -43,7 +43,9 @@
                     </td>
                     <td class="text-end">${{ '%.2f' | format(item.price) }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
-                    <td class="text-end">${{ '%.2f' | format(item.subtotal) }}</td>
+                    <td class="text-end">
+                      ${{ '%.2f' | format(item.subtotal) }}
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>

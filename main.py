@@ -251,18 +251,7 @@ def contact():
         msg['Subject'] = f'New contact form message from {name}'
         msg['To'] = 'neetzmade@gmail.com'
         msg['Reply-To'] = email
-
-        sender = 'johnpaulpaschal2@gmail.com'
-        password = 'wdvp jkim ccvm qarm'
-
-        msg = EmailMessage()
-        msg['Subject'] = f'New contact form message from {name}'
-        msg['To'] = 'neetzmade@gmail.com'
-        msg['Reply-To'] = email
-        if sender:
-            msg['From'] = sender
-        else:
-            msg['From'] = email
+        msg['From'] = sender
 
         plain = f"You received a new message from the website contact form.\n\nName: {name}\nEmail: {email}\n\nMessage:\n{message}"
         html = f"""<html><body>
