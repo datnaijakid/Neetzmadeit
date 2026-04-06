@@ -1,0 +1,160 @@
+{% extends 'base.html' %} {% block title %}Checkout - Neetzmadeit{% endblock %}
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold">Review Your Order</h1>
+      <p class="fs-5 text-secondary">
+        Review your items below and provide your contact information to complete
+        your order.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4">
+            <h3 class="fw-bold mb-4">Order Items</h3>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in cart_items %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <img
+                          src="{{ url_for('static', filename='assets/img/' ~ item.image) }}"
+                          alt="{{ item.name }}"
+                          width="60"
+                          class="rounded-3 border"
+                        />
+                        <div>
+                          <h6 class="mb-1">{{ item.name }}</h6>
+                          <p class="mb-0 text-muted small">
+                            {{ item.description }}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-end">${{ '%.2f' | format(item.price) }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">
+                      ${{ '%.2f' | format(item.subtotal) }}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="text-end mt-3">
+              <p class="fs-5 mb-1">Order Total:</p>
+              <h3 class="fw-bold">${{ '%.2f' | format(total) }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4">
+            <h3 class="fw-bold mb-4">Contact Information</h3>
+            <form method="POST" action="{{ url_for('checkout') }}">
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="name"
+                  name="name"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <p class="fw-bold mb-3 mt-4">
+                How can we reach you? (select at least one)
+              </p>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input
+                  type="tel"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="phone"
+                  name="phone"
+                  placeholder="(123) 456-7890"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="instagram" class="form-label"
+                  >Instagram Handle</label
+                >
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="instagram"
+                  name="instagram"
+                  placeholder="@yourinsta"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="tiktok" class="form-label">TikTok Handle</label>
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="tiktok"
+                  name="tiktok"
+                  placeholder="@yourtiktok"
+                />
+              </div>
+
+              <div class="mb-4">
+                <label for="other" class="form-label"
+                  >Other Contact Method</label
+                >
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="other"
+                  name="other"
+                  placeholder="Discord, Snapchat, website, etc."
+                />
+              </div>
+
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-success rounded-pill px-4 fw-bold py-3"
+                >
+                  Place Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

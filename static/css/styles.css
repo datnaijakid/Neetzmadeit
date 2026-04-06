@@ -75,3 +75,20 @@ body {
 textarea.form-control {
     border-radius: 1rem;
 }
+
+.cart-item-row td {
+    background-color: #E4D7C7;
+    color: #5B7D60;
+    border-top: 1px solid rgba(91, 125, 96, 0.12);
+}
+
+.cart-item-row td h6,
+.cart-item-row td p {
+    color: #5B7D60;
+}
+
+.cart-table thead th {
+    color: #5B7D60;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(91, 125, 96, 0.2);
+}

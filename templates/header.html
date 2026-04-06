@@ -19,16 +19,16 @@
           <a class="nav-link{% if request.path == url_for('home') %} active{% endif %}" href="{{ url_for('home') }}"{% if request.path == url_for('home') %} aria-current="page"{% endif %}>Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link{% if request.path.startswith('/shop') %} active{% endif %}" href="#">Shop</a>
+          <a class="nav-link{% if request.path.startswith('/shop') %} active{% endif %}" href="{{ url_for('shop') }}"{% if request.path.startswith('/shop') %} aria-current="page"{% endif %}>Shop</a>
         </li>
         <li class="nav-item">
           <a class="nav-link{% if request.path == url_for('contact') %} active{% endif %}" href="{{ url_for('contact') }}"{% if request.path == url_for('contact') %} aria-current="page"{% endif %}>Contact</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link{% if request.path.startswith('/about') %} active{% endif %}" href="#">About</a>
+          <a class="nav-link{% if request.path.startswith('/about') %} active{% endif %}" href="{{ url_for('about') }}"{% if request.path.startswith('/about') %} aria-current="page"{% endif %}>About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link{% if request.path.startswith('/cart') %} active{% endif %}" href="#">Cart</a>
+          <a class="nav-link{% if request.path.startswith('/cart') %} active{% endif %}" href="{{ url_for('cart') }}"{% if request.path.startswith('/cart') %} aria-current="page"{% endif %}>Cart</a>
         </li>
       </ul>
     </div>

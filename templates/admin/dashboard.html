@@ -1,0 +1,140 @@
+{% extends 'base.html' %} {% block title %}Admin Dashboard - Neetzmadeit{%
+endblock %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="display-5 fw-bold">Admin Dashboard</h1>
+      <a
+        href="{{ url_for('logout') }}"
+        class="btn btn-outline-danger rounded-pill"
+      >
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+      </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div
+      class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+      role="alert"
+    >
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="card shadow-lg border-0 rounded-4 h-100">
+          <div class="card-body text-center p-4">
+            <i class="fas fa-box fa-3x text-success mb-3"></i>
+            <h3 class="fw-bold">{{ products|length }}</h3>
+            <p class="text-muted mb-3">Total Products</p>
+            <a
+              href="{{ url_for('admin_products') }}"
+              class="btn btn-success rounded-pill"
+            >
+              Manage Products
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-lg border-0 rounded-4 h-100">
+          <div class="card-body text-center p-4">
+            <i class="fas fa-star fa-3x text-warning mb-3"></i>
+            <h3 class="fw-bold">
+              {{ products|selectattr('is_featured')|list|length }}
+            </h3>
+            <p class="text-muted mb-3">Featured Products</p>
+            <a
+              href="{{ url_for('admin_products') }}"
+              class="btn btn-warning rounded-pill"
+            >
+              Manage Featured
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card shadow-lg border-0 rounded-4 h-100">
+          <div class="card-body text-center p-4">
+            <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+            <h3 class="fw-bold">Settings</h3>
+            <p class="text-muted mb-3">Site Configuration</p>
+            <a
+              href="{{ url_for('admin_settings') }}"
+              class="btn btn-primary rounded-pill"
+            >
+              Site Settings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0"><i class="fas fa-box me-2"></i>Recent Products</h3>
+      </div>
+      <div class="card-body">
+        {% if products %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Featured</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products[:5] %}
+              <tr>
+                <td>{{ product.name }}</td>
+                <td>${{ "%.2f"|format(product.price) }}</td>
+                <td>
+                  {% if product.is_featured %}
+                  <span class="badge bg-warning">Featured</span>
+                  {% else %}
+                  <span class="badge bg-secondary">Regular</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a
+                    href="{{ url_for('admin_edit_product', product_id=product.id) }}"
+                    class="btn btn-sm btn-outline-primary me-2"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <a
+                    href="{{ url_for('product_detail', product_id=product.id) }}"
+                    class="btn btn-sm btn-outline-info"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <p class="text-muted mb-3">No products yet.</p>
+          <a
+            href="{{ url_for('admin_add_product') }}"
+            class="btn btn-success rounded-pill"
+          >
+            <i class="fas fa-plus me-2"></i>Add First Product
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

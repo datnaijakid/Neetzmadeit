@@ -1,0 +1,182 @@
+{% extends 'base.html' %} {% block title %}{{ product.name }} - Neetzmadeit{%
+endblock %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('home') }}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('shop') }}">Shop</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ product.name }}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="row g-5">
+      <div class="col-lg-6">
+        {% if images %}
+        <div
+          id="productCarousel"
+          class="carousel slide shadow-lg rounded-4 overflow-hidden"
+          data-bs-ride="carousel"
+        >
+          <div class="carousel-inner">
+            {% for image in images %}
+            <div class="carousel-item {% if loop.first %}active{% endif %}">
+              <img
+                src="{{ url_for('static', filename='assets/img/' + image) }}"
+                class="d-block w-100"
+                alt="{{ product.name }}"
+                style="height: 500px; object-fit: cover"
+              />
+            </div>
+            {% endfor %}
+          </div>
+
+          {% if images|length > 1 %}
+          <button
+            class="carousel-control-prev"
+            type="button"
+            data-bs-target="#productCarousel"
+            data-bs-slide="prev"
+          >
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button
+            class="carousel-control-next"
+            type="button"
+            data-bs-target="#productCarousel"
+            data-bs-slide="next"
+          >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+
+          <div class="carousel-indicators position-static mt-3">
+            {% for image in images %}
+            <button
+              type="button"
+              data-bs-target="#productCarousel"
+              data-bs-slide-to="{{ loop.index0 }}"
+              class="{% if loop.first %}active{% endif %}"
+              aria-current="true"
+              aria-label="Slide {{ loop.index }}"
+            >
+              <img
+                src="{{ url_for('static', filename='assets/img/' + image) }}"
+                class="d-block w-100 rounded"
+                alt="Thumbnail {{ loop.index }}"
+                style="height: 60px; object-fit: cover"
+              />
+            </button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="card shadow-lg rounded-4 overflow-hidden">
+          <img
+            src="{{ url_for('static', filename='assets/img/placeholder.jpg') }}"
+            class="card-img-top"
+            alt="{{ product.name }}"
+            style="height: 500px; object-fit: cover"
+          />
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-5">
+            <h1 class="display-5 fw-bold mb-3">{{ product.name }}</h1>
+
+            {% if product.is_featured %}
+            <span class="badge bg-warning mb-3 fs-6">Featured Product</span>
+            {% endif %}
+
+            <div class="mb-4">
+              <span class="display-4 text-success fw-bold"
+                >${{ "%.2f"|format(product.price) }}</span
+              >
+            </div>
+
+            <div class="mb-4">
+              <h4 class="fw-bold mb-3">Description</h4>
+              <p class="fs-5 text-muted lh-base">{{ product.description }}</p>
+            </div>
+
+            <div class="d-grid gap-3">
+              <a
+                href="{{ url_for('add_to_cart', product_id=product.id) }}"
+                class="btn btn-success btn-lg rounded-pill py-3 fw-bold"
+              >
+                <i class="fas fa-cart-plus me-2"></i>Add to Cart - ${{
+                "%.2f"|format(product.price) }}
+              </a>
+
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <a
+                    href="{{ url_for('shop') }}"
+                    class="btn btn-outline-secondary btn-lg rounded-pill w-100"
+                  >
+                    <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                  </a>
+                </div>
+                <div class="col-12 col-md-6">
+                  <a
+                    href="{{ url_for('cart') }}"
+                    class="btn btn-outline-primary btn-lg rounded-pill w-100"
+                  >
+                    <i class="fas fa-shopping-cart me-2"></i>View Cart
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products Section -->
+    {% if all_products %}
+    <div class="mt-5">
+      <h3 class="text-center mb-4 fw-bold">You Might Also Like</h3>
+      <div class="row g-4">
+        {% for related_product in all_products %}
+        <div class="col-lg-3 col-md-6">
+          <div class="card shadow-lg border-0 rounded-4 h-100">
+            {% set rel_images = related_product.images | from_json %} {% set
+            rel_main_image = rel_images[0] if rel_images else 'placeholder.jpg'
+            %}
+            <img
+              src="{{ url_for('static', filename='assets/img/' + rel_main_image) }}"
+              class="card-img-top"
+              alt="{{ related_product.name }}"
+              style="height: 200px; object-fit: cover"
+            />
+            <div class="card-body text-center">
+              <h6 class="card-title fw-bold">{{ related_product.name }}</h6>
+              <p class="text-success fw-bold mb-3">
+                ${{ "%.2f"|format(related_product.price) }}
+              </p>
+              <a
+                href="{{ url_for('product_detail', product_id=related_product.id) }}"
+                class="btn btn-outline-success rounded-pill"
+                >View Details</a
+              >
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

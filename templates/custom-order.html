@@ -1,0 +1,126 @@
+{% extends 'base.html' %} {% block title %}Place Custom Order - Neetzmadeit{%
+endblock %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="row align-items-start">
+      <div class="col-md-6 mb-4 text-center">
+        <h1 class="mb-3">Place a Custom Order</h1>
+        <p>
+          Have a custom idea in mind? I'd love to create something special for
+          you! Tell me about your custom request and how I can reach you. I'll
+          get back to you with details and a quote.
+        </p>
+        <p class="text-secondary fs-5 mt-4">
+          Fill in at least one contact method so I can reach you.
+        </p>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-lg border-0">
+          <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('custom_order') }}">
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="name"
+                  name="name"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label"
+                  >Describe your custom order</label
+                >
+                <textarea
+                  class="form-control rounded px-3 shadow-sm"
+                  id="description"
+                  name="description"
+                  rows="4"
+                  placeholder="Tell me about your custom request... (colors, sizes, materials, inspiration, etc.)"
+                  required
+                ></textarea>
+              </div>
+
+              <hr class="my-4" />
+              <p class="fw-bold mb-3">
+                Contact Information (select at least one):
+              </p>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input
+                  type="tel"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="phone"
+                  name="phone"
+                  placeholder="(123) 456-7890"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="instagram" class="form-label"
+                  >Instagram Handle</label
+                >
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="instagram"
+                  name="instagram"
+                  placeholder="@yourinsta"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="tiktok" class="form-label">TikTok Handle</label>
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="tiktok"
+                  name="tiktok"
+                  placeholder="@yourtiktok"
+                />
+              </div>
+
+              <div class="mb-4">
+                <label for="other" class="form-label"
+                  >Other Contact Method</label
+                >
+                <input
+                  type="text"
+                  class="form-control rounded-pill px-3 shadow-sm"
+                  id="other"
+                  name="other"
+                  placeholder="Discord, Snapchat, website, etc."
+                />
+              </div>
+
+              <div class="d-grid">
+                <button
+                  type="submit"
+                  class="btn btn-success rounded-pill px-4 fw-bold"
+                >
+                  Send Custom Order Request
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,52 +1,54 @@
-{% extends 'base.html' %} {% block title %}Home - Neetzmadeit{% endblock %} 
+{% extends 'base.html' %} {% block title %}Home - Neetzmadeit{% endblock %}
 {%block content %}
 <!--- ......Featured Items Section............. -->
 <section class="py-5 mb-5">
   <div class="container">
-    
     <h1 class="text-center mb-5">Featured items</h1>
 
+    {% if featured_products %}
     <div class="row row-cols-1 row-cols-md-3 g-4">
-      
+      {% for product in featured_products %} {% set images = product.images |
+      from_json %} {% set main_image = images[0] if images else
+      'placeholder.jpg' %}
       <div class="col">
         <div class="card h-100 shadow-lg">
-          <img src="../static/assets/img/catears.jpg" class="card-img-top" alt="Item 1" style="height: 250px; object-fit: cover;">
+          <img
+            src="{{ url_for('static', filename='assets/img/' + main_image) }}"
+            class="card-img-top"
+            alt="{{ product.name }}"
+            style="height: 250px; object-fit: cover"
+          />
           <div class="card-body text-center">
-            <h5 class="card-title">Cat ear</h5>
-            <p class="card-text">$19.99</p>
-            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">${{ "%.2f"|format(product.price) }}</p>
+            <a
+              href="{{ url_for('product_detail', product_id=product.id) }}"
+              class="btn btn-success rounded-pill px-4 fw-bold"
+              >View Details</a
+            >
           </div>
         </div>
       </div>
-
-      <div class="col">
-        <div class="card h-100 shadow-lg">
-          <img src="../static/assets/img/keilatop.jpg" class="card-img-top" alt="Item 2" style="height: 250px; object-fit: cover;">
-          <div class="card-body text-center">
-            <h5 class="card-title">Keila Top</h5>
-            <p class="card-text">$29.99</p>
-            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="card h-100 shadow-lg">
-          <img src="../static/assets/img/keychains.jpg" class="card-img-top" alt="Item 3" style="height: 250px; object-fit: cover;">
-          <div class="card-body text-center">
-            <h5 class="card-title">Keychains</h5>
-            <p class="card-text">$39.99</p>
-            <a href="#" class="btn btn-success rounded-pill px-4 fw-bold">Buy Now</a>
-          </div>
-        </div>
-      </div>
-
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="text-center">
+      <p class="text-muted fs-5">No featured products available yet.</p>
+    </div>
+    {% endif %}
 
     <div class="text-center mt-5">
-      <a href="products.html" class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold">Shop all</a>
+      <a
+        href="{{ url_for('shop') }}"
+        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold"
+        >Shop all</a
+      >
+      <a
+        href="{{ url_for('custom_order') }}"
+        class="btn btn-outline-success btn-lg rounded-pill px-5 py-3 fw-bold ms-3"
+        >Place custom order</a
+      >
     </div>
-
   </div>
 </section>
 <!--- ......About Me Section............. -->
@@ -54,27 +56,97 @@
   <div class="container">
     <div class="card mb-3 border-0 bg-light rounded-3 overflow-hidden">
       <div class="row g-0">
-        
         <div class="col-md-4 h-100">
-          <img 
-            src="../static/assets/img/mylogo 2.png" 
-            class="img-fluid w-100 h-100" 
-            alt="Neetzmadeit Logo" 
-            style="object-fit: cover; min-height: 100%;"
-          >
+          <img
+            src="{{ url_for('static', filename='assets/img/mylogo 2.png') }}"
+            class="img-fluid w-100 h-100"
+            alt="Neetzmadeit Logo"
+            style="object-fit: cover; min-height: 100%"
+          />
         </div>
-        
+
         <div class="col-md-8 d-flex align-items-center">
           <div class="card-body p-5 text-center">
             <h1 class="display-5 fw-bold mb-4">About me</h1>
-            <p class="fs-4 mb-4">Hi guys! I'm Nita and I run a small business dedicated to creating unique and handmade items that bring joy and creativity to your everyday life. From custom accessories to personalized gifts, I take pride in my craftsmanship and attention to detail. Explore my collection and find something special made just for you!</p>
-            <a href="about.html" class="btn btn-success btn-lg rounded-pill px-5 py-2 fw-bold">Learn More</a>
+            <p class="fs-4 mb-4">
+              Hi guys! I'm Nita and I run a small business dedicated to creating
+              unique and handmade items that bring joy and creativity to your
+              everyday life. From custom accessories to personalized gifts, I
+              take pride in my craftsmanship and attention to detail. Explore my
+              collection and find something special made just for you!
+            </p>
+            <a
+              href="{{ url_for('about') }}"
+              class="btn btn-success btn-lg rounded-pill px-5 py-2 fw-bold"
+              >Learn More</a
+            >
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </section>
-<!--- ......Custom order section............. -->
+<!--- ......YouTube Section............. -->
+<section class="py-5 card-body">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-6 fw-bold">Follow me on YouTube</h2>
+      <p class="fs-5 text-secondary">
+        Watch behind-the-scenes content, tutorials, and more!
+      </p>
+    </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6 mx-auto text-center">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-0">
+            <iframe
+              width="100%"
+              height="350"
+              src="{{ youtube_embed }}"
+              frameborder="0"
+              allow="
+                accelerometer;
+                autoplay;
+                clipboard-write;
+                encrypted-media;
+                gyroscope;
+                picture-in-picture;
+              "
+              allowfullscreen
+            >
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-5">
+      <a
+        href="https://www.youtube.com/@neetzmadeit"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold mb-3"
+      >
+        <i class="fa-brands fa-youtube me-2"></i>Subscribe to my Channel
+      </a>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a
+          href="https://www.instagram.com/neetzmadeit"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline-success btn-lg rounded-pill px-4 py-3 fw-bold"
+        >
+          <i class="fa-brands fa-instagram me-2"></i>Follow on Instagram
+        </a>
+        <a
+          href="https://www.tiktok.com/@neetzmadeit"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline-success btn-lg rounded-pill px-4 py-3 fw-bold"
+        >
+          <i class="fa-brands fa-tiktok me-2"></i>Follow on TikTok
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

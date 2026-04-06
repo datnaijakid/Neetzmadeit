@@ -1,0 +1,183 @@
+{% extends 'base.html' %} {% block title %}Edit Product - Neetzmadeit{% endblock
+%} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="display-5 fw-bold">Edit Product</h1>
+      <a
+        href="{{ url_for('admin_products') }}"
+        class="btn btn-outline-secondary rounded-pill"
+      >
+        <i class="fas fa-arrow-left me-2"></i>Back to Products
+      </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div
+      class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+      role="alert"
+    >
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <div class="card shadow-lg border-0 rounded-4">
+      <div class="card-body p-5">
+        <form method="POST" enctype="multipart/form-data">
+          <div class="row g-4">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="name" class="form-label fw-bold"
+                  >Product Name *</label
+                >
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  id="name"
+                  name="name"
+                  value="{{ product.name }}"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label fw-bold"
+                  >Description *</label
+                >
+                <textarea
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  rows="6"
+                  required
+                >
+{{ product.description }}</textarea
+                >
+              </div>
+
+              <div class="mb-3">
+                <label for="price" class="form-label fw-bold">Price *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input
+                    type="number"
+                    class="form-control form-control-lg"
+                    id="price"
+                    name="price"
+                    step="0.01"
+                    min="0"
+                    value="{{ product.price }}"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="is_featured"
+                    name="is_featured"
+                    {%
+                    if
+                    product.is_featured
+                    %}checked{%
+                    endif
+                    %}
+                  />
+                  <label class="form-check-label fw-bold" for="is_featured">
+                    Featured Product (will appear on homepage)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-header">
+                  <h5 class="mb-0">Current Images</h5>
+                </div>
+                <div class="card-body">
+                  {% if current_images %}
+                  <p class="text-muted small mb-3">
+                    Check the boxes to keep existing images:
+                  </p>
+                  <div class="row g-2">
+                    {% for image in current_images %}
+                    <div class="col-6">
+                      <div class="position-relative">
+                        <img
+                          src="{{ url_for('static', filename='assets/img/' + image) }}"
+                          class="img-fluid rounded"
+                          alt="Product image"
+                        />
+                        <div class="form-check mt-1">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="keep_image_{{ loop.index }}"
+                            name="keep_image_{{ loop.index }}"
+                            checked
+                          />
+                          <label
+                            class="form-check-label small"
+                            for="keep_image_{{ loop.index }}"
+                          >
+                            Keep
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <hr />
+                  {% endif %}
+
+                  <h6 class="mb-3">Replace Images (optional)</h6>
+                  <p class="text-muted small mb-3">
+                    Upload new images to replace existing ones. Leave empty to
+                    keep current images.
+                  </p>
+
+                  {% for i in range(1, 6) %}
+                  <div class="mb-3">
+                    <label for="image_{{ i }}" class="form-label"
+                      >New Image {{ i }}</label
+                    >
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="image_{{ i }}"
+                      name="image_{{ i }}"
+                      accept="image/*"
+                    />
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 pt-4">
+            <button
+              type="submit"
+              class="btn btn-success btn-lg rounded-pill px-5"
+            >
+              <i class="fas fa-save me-2"></i>Update Product
+            </button>
+            <a
+              href="{{ url_for('admin_products') }}"
+              class="btn btn-outline-secondary btn-lg rounded-pill px-5"
+            >
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

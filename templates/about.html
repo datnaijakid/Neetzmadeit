@@ -1,0 +1,136 @@
+{% extends 'base.html' %} {% block title %}About - Neetzmadeit{% endblock %} {%
+block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold">About Neetzmadeit</h1>
+      <p class="fs-5 text-secondary">
+        Handmade pieces made with love, color, and a little bit of sparkle.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card shadow-lg border-0">
+          <img
+            src="{{ url_for('static', filename='assets/img/mylogo 2.png') }}"
+            class="card-img-top"
+            alt="Neetzmadeit logo"
+            style="object-fit: cover; height: 100%; min-height: 320px"
+          />
+        </div>
+      </div>
+      <div class="col-lg-6 d-flex align-items-center">
+        <div class="card shadow-sm">
+          <div class="card-body rounded-3 p-5">
+            <h2 class="fw-bold mb-4">Meet Anita</h2>
+            <p class="fs-5 mb-4">
+              Neetzmadeit started as a small creative shop where every item is
+              made by hand with care. I specialize in playful accessories, cozy
+              tops, and giftable pieces that feel personal and joyful.
+            </p>
+            <p class="fs-5 mb-4">
+              Whether you are shopping for yourself or searching for a
+              thoughtful gift, I want your order to feel warm, unique, and made
+              just for you. All pieces are designed and crafted from the heart.
+            </p>
+            <a
+              href="{{ url_for('shop') }}"
+              class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold"
+              >Browse the shop</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-5">
+      <div class="col-md-6">
+        <div class="card border-0 card-body shadow-sm p-4 h-100">
+          <h3 class="fw-bold mb-3">Why shop here?</h3>
+          <ul class="list-unstyled fs-5">
+            <li class="mb-2">• Handmade items with attention to detail.</li>
+            <li class="mb-2">
+              • Thoughtful designs inspired by style and comfort.
+            </li>
+            <li class="mb-2">• Quick replies for custom order requests.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm card-body p-4 h-100">
+          <h3 class="fw-bold mb-3">What you can expect</h3>
+          <p class="fs-5">
+            A friendly shopping experience, quality materials, and products that
+            make great gifts for friends, family, and yourself. I stand behind
+            every order from start to finish.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!--- ......YouTube Section............. -->
+<section class="py-5 card-body mt-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-6 fw-bold">Follow me on YouTube</h2>
+      <p class="fs-5 text-secondary">
+        Watch behind-the-scenes content, tutorials, and more!
+      </p>
+    </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6 mx-auto text-center">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-0">
+            <iframe
+              width="100%"
+              height="350"
+              src="{{ youtube_embed }}"
+              frameborder="0"
+              allow="
+                accelerometer;
+                autoplay;
+                clipboard-write;
+                encrypted-media;
+                gyroscope;
+                picture-in-picture;
+              "
+              allowfullscreen
+            >
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-5">
+      <a
+        href="https://www.youtube.com/@neetzmadeit"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold mb-3"
+      >
+        <i class="fa-brands fa-youtube me-2"></i>Subscribe to my Channel
+      </a>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a
+          href="https://www.instagram.com/neetzmadeit"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline-success btn-lg rounded-pill px-4 py-3 fw-bold"
+        >
+          <i class="fa-brands fa-instagram me-2"></i>Follow on Instagram
+        </a>
+        <a
+          href="https://www.tiktok.com/@neetzmadeit"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-outline-success btn-lg rounded-pill px-4 py-3 fw-bold"
+        >
+          <i class="fa-brands fa-tiktok me-2"></i>Follow on TikTok
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

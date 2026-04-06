@@ -1,0 +1,134 @@
+{% extends 'base.html' %} {% block title %}Site Settings - Neetzmadeit{%
+endblock %} {% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="display-5 fw-bold">Site Settings</h1>
+      <a
+        href="{{ url_for('admin_dashboard') }}"
+        class="btn btn-outline-secondary rounded-pill"
+      >
+        <i class="fas fa-arrow-left me-2"></i>Dashboard
+      </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div
+      class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+      role="alert"
+    >
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+              <i class="fas fa-cog me-2"></i>YouTube Settings
+            </h3>
+          </div>
+          <div class="card-body p-5">
+            <form method="POST">
+              <div class="mb-4">
+                <label for="youtube_channel" class="form-label fw-bold"
+                  >YouTube Channel ID</label
+                >
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  id="youtube_channel"
+                  name="youtube_channel"
+                  value="{{ youtube_channel }}"
+                  required
+                />
+                <div class="form-text">
+                  Enter your YouTube channel ID (e.g., "neetzmadeit"). This will
+                  be used for the embedded video playlist on your homepage and
+                  about page.
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="preview_video" class="form-label fw-bold"
+                  >Preview Video Link</label
+                >
+                <input
+                  type="url"
+                  class="form-control form-control-lg"
+                  id="preview_video"
+                  name="preview_video"
+                  value="{{ preview_video }}"
+                  placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+                />
+                <div class="form-text">
+                  Enter a YouTube video URL to display as a preview video on
+                  your site.
+                </div>
+              </div>
+
+              <div class="d-flex gap-3">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg rounded-pill px-5"
+                >
+                  <i class="fas fa-save me-2"></i>Save Settings
+                </button>
+                <a
+                  href="{{ url_for('admin_dashboard') }}"
+                  class="btn btn-outline-secondary btn-lg rounded-pill px-5"
+                >
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {% if preview_embed %}
+        <div class="card shadow-lg border-0 rounded-4 mt-4">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-video me-2"></i>Preview Video</h5>
+          </div>
+          <div class="card-body">
+            <div class="ratio ratio-16x9">
+              <iframe
+                src="{{ preview_embed }}"
+                title="Preview Video"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="card shadow-lg border-0 rounded-4 mt-4">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+              <i class="fas fa-info-circle me-2"></i>How to Find Your YouTube
+              Channel ID
+            </h5>
+          </div>
+          <div class="card-body">
+            <ol class="mb-0">
+              <li>Go to your YouTube channel</li>
+              <li>Look at the URL in your browser</li>
+              <li>
+                If it's <code>youtube.com/@yourchannel</code>, the ID is
+                "yourchannel"
+              </li>
+              <li>
+                If it's <code>youtube.com/channel/UCxxxxx</code>, use the full
+                channel ID
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
