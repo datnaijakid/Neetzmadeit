@@ -16,7 +16,7 @@
           <div class="card-body p-4">
             <h3 class="fw-bold mb-4">Order Items</h3>
             <div class="table-responsive">
-              <table class="table align-middle">
+              <table class="table align-middle cart-table">
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -27,13 +27,13 @@
                 </thead>
                 <tbody>
                   {% for item in cart_items %}
-                  <tr>
+                  <tr class="cart-item-row">
                     <td>
-                      <div class="d-flex align-items-center gap-2">
+                      <div class="d-flex align-items-center gap-3">
                         <img
                           src="{{ url_for('static', filename='assets/img/' ~ item.image) }}"
                           alt="{{ item.name }}"
-                          width="60"
+                          width="80"
                           class="rounded-3 border"
                         />
                         <div>
@@ -43,9 +43,7 @@
                     </td>
                     <td class="text-end">${{ '%.2f' | format(item.price) }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
-                    <td class="text-end">
-                      ${{ '%.2f' | format(item.subtotal) }}
-                    </td>
+                    <td class="text-end">${{ '%.2f' | format(item.subtotal) }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
