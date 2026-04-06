@@ -15,7 +15,7 @@ from functools import wraps
 import time
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret-key'
+app.config['SECRET_KEY'] = b'\xee\xf8\xdb>\xf2\xda\xea,\x1e&\x10\xca\xa2\x0c\n3"-\x11&\'\xdf&\x0e'
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'assets', 'img')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
@@ -62,8 +62,8 @@ def init_db():
         # Create an initial admin user if none exists. If the default
         # admin user is already present, update it to the new credentials.
         existing_user = db.execute('SELECT id, username FROM user LIMIT 1').fetchone()
-        admin_username = os.environ.get('ADMIN_USERNAME', 'anita')
-        admin_password = os.environ.get('ADMIN_PASSWORD', 'pasnita0204')
+        admin_username = 'anita'
+        admin_password = 'pasnita0204'
         password_hash = generate_password_hash(admin_password)
 
         if not existing_user:
@@ -244,8 +244,8 @@ def contact():
 
         sender = 'johnpaulpaschal2@gmail.com'
         password = 'wdvp jkim ccvm qarm'
-        smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
 
         msg = EmailMessage()
         msg['Subject'] = f'New contact form message from {name}'
@@ -254,8 +254,6 @@ def contact():
 
         sender = 'johnpaulpaschal2@gmail.com'
         password = 'wdvp jkim ccvm qarm'
-        smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
 
         msg = EmailMessage()
         msg['Subject'] = f'New contact form message from {name}'
@@ -355,8 +353,8 @@ def custom_order():
 
         sender = 'johnpaulpaschal2@gmail.com'
         password = 'wdvp jkim ccvm qarm'
-        smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
 
         msg = EmailMessage()
         msg['Subject'] = f'Custom Order Request from {name}'
@@ -453,8 +451,8 @@ def checkout():
 
         sender = 'johnpaulpaschal2@gmail.com'
         password = 'wdvp jkim ccvm qarm'
-        smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-        smtp_port = int(os.environ.get('SMTP_PORT', 587))
+        smtp_server = 'smtp.gmail.com'
+        smtp_port = 587
 
         msg = EmailMessage()
         msg['Subject'] = f'New Order from {name}'
