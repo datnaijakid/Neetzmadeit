@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light border-bottom">
   <div class="container">
-    <a class="navbar-brand fw-bold title" href="{{ url_for('home') }}">Neetzmadeit</a>
+    <a class="navbar-brand fw-bold title" href="{{ url_for('home') }}">Neetzmadeit꧂  </a>
     <button
       class="navbar-toggler"
       type="button"
@@ -22,6 +22,9 @@
           <a class="nav-link{% if request.path.startswith('/shop') %} active{% endif %}" href="{{ url_for('shop') }}"{% if request.path.startswith('/shop') %} aria-current="page"{% endif %}>Shop</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link{% if request.path == url_for('custom_order') %} active{% endif %}" href="{{ url_for('custom_order') }}"{% if request.path == url_for('custom_order') %} aria-current="page"{% endif %}>Custom order</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link{% if request.path == url_for('contact') %} active{% endif %}" href="{{ url_for('contact') }}"{% if request.path == url_for('contact') %} aria-current="page"{% endif %}>Contact</a>
         </li>
         <li class="nav-item">
@@ -34,3 +37,23 @@
     </div>
   </div>
 </nav>
+<div class="announcement-bar" role="status">
+  <div class="announcement-track" aria-label="Local deliveries only">
+    <div class="announcement-group">
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+      <span>✿ Local deliveries only</span><span aria-hidden="true">•</span>
+    </div>
+    <div class="announcement-group" aria-hidden="true">
+      <span>✿ Local deliveries only</span><span>•</span>
+      <span>✿ Local deliveries only</span><span>•</span>
+      <span>✿ Local deliveries only</span><span>•</span>
+      <span>✿ Local deliveries only</span><span>•</span>
+      <span>✿ Local deliveries only</span><span>•</span>
+      <span>✿ Local deliveries only</span><span>•</span>
+    </div>
+  </div>
+</div>

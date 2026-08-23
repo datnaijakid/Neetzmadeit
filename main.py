@@ -242,16 +242,16 @@ def contact():
             flash('Please fill out all fields.', 'danger')
             return redirect(url_for('contact'))
 
-        sender = 'johnpaulpaschal2@gmail.com'
-        password = 'wdvp jkim ccvm qarm'
+        sender = os.environ.get('EMAIL_ADDRESS', '')
+        password = os.environ.get('EMAIL_PASSWORD', '')
         smtp_server = 'smtp.gmail.com'
         smtp_port = 587
 
         msg = EmailMessage()
-        msg['Subject'] = f'New contact form message from {name}'
+        msg['Subject'] = f'Contact form — {name} <{email}>'
         msg['To'] = 'neetzmade@gmail.com'
-        msg['Reply-To'] = email
-        msg['From'] = sender
+        msg['Reply-To'] = f'{name} <{email}>'
+        msg['From'] = f'{name} via Neetzmadeit <{sender}>'
 
         plain = f"You received a new message from the website contact form.\n\nName: {name}\nEmail: {email}\n\nMessage:\n{message}"
         html = f"""<html><body>
@@ -331,6 +331,10 @@ def custom_order():
         instagram = request.form.get('instagram', '').strip()
         tiktok = request.form.get('tiktok', '').strip()
         other = request.form.get('other', '').strip()
+        inspo_photo = request.files.get('inspo_photo')
+        photo_data = None
+        photo_name = None
+        photo_type = None
 
         if not name or not description:
             flash('Please fill out your name and describe your custom order.', 'danger')
@@ -340,8 +344,22 @@ def custom_order():
             flash('Please provide at least one contact method.', 'danger')
             return redirect(url_for('custom_order'))
 
-        sender = 'johnpaulpaschal2@gmail.com'
-        password = 'wdvp jkim ccvm qarm'
+        if inspo_photo and inspo_photo.filename:
+            photo_name = secure_filename(inspo_photo.filename)
+            allowed_photo_extensions = {'png', 'jpg', 'jpeg', 'webp'}
+            photo_extension = photo_name.rsplit('.', 1)[-1].lower() if '.' in photo_name else ''
+            if not photo_name or photo_extension not in allowed_photo_extensions:
+                flash('Please upload a PNG, JPG, JPEG, or WEBP inspiration photo.', 'danger')
+                return redirect(url_for('custom_order'))
+
+            photo_data = inspo_photo.read()
+            if len(photo_data) > 5 * 1024 * 1024:
+                flash('Please choose an inspiration photo smaller than 5 MB.', 'danger')
+                return redirect(url_for('custom_order'))
+            photo_type = inspo_photo.mimetype or 'application/octet-stream'
+
+        sender = os.environ.get('EMAIL_ADDRESS', '')
+        password = os.environ.get('EMAIL_PASSWORD', '')
         smtp_server = 'smtp.gmail.com'
         smtp_port = 587
 
@@ -384,6 +402,8 @@ CONTACT INFORMATION:
             plain += f"TikTok: {tiktok}\n"
         if other:
             plain += f"Other: {other}\n"
+        if photo_name:
+            plain += f"Inspiration photo attached: {photo_name}\n"
 
         html = f"""<html><body>
         <h2>Custom Order Request from {name}</h2>
@@ -397,6 +417,9 @@ CONTACT INFORMATION:
 
         msg.set_content(plain)
         msg.add_alternative(html, subtype='html')
+        if photo_data and photo_name:
+            maintype, subtype = photo_type.split('/', 1) if '/' in photo_type else ('application', 'octet-stream')
+            msg.add_attachment(photo_data, maintype=maintype, subtype=subtype, filename=photo_name)
 
         if not (sender and password):
             flash("Email not sent. Server credentials not configured.", "warning")
@@ -438,8 +461,8 @@ def checkout():
             flash('Please provide at least one contact method.', 'danger')
             return redirect(url_for('checkout'))
 
-        sender = 'johnpaulpaschal2@gmail.com'
-        password = 'wdvp jkim ccvm qarm'
+        sender = os.environ.get('EMAIL_ADDRESS', '')
+        password = os.environ.get('EMAIL_PASSWORD', '')
         smtp_server = 'smtp.gmail.com'
         smtp_port = 587
 

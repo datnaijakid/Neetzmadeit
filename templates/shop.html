@@ -14,10 +14,10 @@ block content %}
       {% for product in products %} {% set images = product.images | from_json
       %} {% set main_image = images[0] if images else 'placeholder.jpg' %}
       <div class="col">
-        <div class="card h-100 shadow-lg border-0">
+        <div class="card shop-product-card h-100 border-0">
           <img
             src="{{ url_for('static', filename='assets/img/' + main_image) }}"
-            class="card-img-top"
+            class="card-img-top shop-product-image"
             alt="{{ product.name }}"
             style="height: 280px; object-fit: cover"
           />

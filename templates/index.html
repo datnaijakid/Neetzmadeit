@@ -1,79 +1,54 @@
 {% extends 'base.html' %} {% block title %}Home - Neetzmadeit{% endblock %}
 {%block content %}
-<!--- ......Featured Items Section............. -->
-<section class="py-5 mb-5">
+<!-- Cozy Fall Collection Hero -->
+<section class="py-4 mb-5">
   <div class="container">
-    <h1 class="text-center mb-5">Featured items</h1>
-
-    {% if featured_products %}
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-      {% for product in featured_products %} {% set images = product.images |
-      from_json %} {% set main_image = images[0] if images else
-      'placeholder.jpg' %}
-      <div class="col">
-        <div class="card h-100 shadow-lg">
-          <img
-            src="{{ url_for('static', filename='assets/img/' + main_image) }}"
-            class="card-img-top"
-            alt="{{ product.name }}"
-            style="height: 250px; object-fit: cover"
-          />
-          <div class="card-body text-center">
-            <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text">${{ "%.2f"|format(product.price) }}</p>
-            <a
-              href="{{ url_for('product_detail', product_id=product.id) }}"
-              class="btn btn-success rounded-pill px-4 fw-bold"
-              >View Details</a
-            >
-          </div>
-        </div>
+    <div class="fall-collection-hero">
+      <div class="fall-collection-card">
+        <p class="fall-collection-eyebrow">AUTUMN COLLECTION</p>
+        <h1>Cozy Fall<br />Collection</h1>
+        <p class="fall-collection-copy">
+          Handmade pieces for crisp days and cozy moments.
+        </p>
+        <a href="{{ url_for('shop') }}" class="fall-collection-button">Shop now</a>
       </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="text-center">
-      <p class="text-muted fs-5">No featured products available yet.</p>
-    </div>
-    {% endif %}
-
-    <div class="text-center mt-5">
-      <a
-        href="{{ url_for('shop') }}"
-        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold"
-        >Shop all</a
-      >
-      <a
-        href="{{ url_for('custom_order') }}"
-        class="btn btn-outline-success btn-lg rounded-pill px-5 py-3 fw-bold ms-3"
-        >Place custom order</a
-      >
+      <img
+        src="{{ url_for('static', filename='assets/img/download (27).jpeg') }}"
+        class="fall-collection-image"
+        alt="Floral autumn artwork"
+      />
     </div>
   </div>
 </section>
 <!--- ......About Me Section............. -->
 <section class="py-5">
   <div class="container">
-    <div class="card mb-3 border-0 bg-light rounded-3 overflow-hidden">
+    <div class="card about-me-card mb-3 border-0 rounded-3 overflow-hidden">
       <div class="row g-0">
         <div class="col-md-4 h-100">
           <img
-            src="{{ url_for('static', filename='assets/img/mylogo 2.png') }}"
+            src="{{ url_for('static', filename='assets/img/keilatop.jpg') }}"
             class="img-fluid w-100 h-100"
-            alt="Neetzmadeit Logo"
+            alt="Nita, founder of Neetzmadeit"
             style="object-fit: cover; min-height: 100%"
           />
         </div>
 
         <div class="col-md-8 d-flex align-items-center">
           <div class="card-body p-5 text-center">
-            <h1 class="display-5 fw-bold mb-4">About me</h1>
+            <h1 class="section-heading display-5 fw-bold mb-4">About me</h1>
             <p class="fs-4 mb-4">
-              Hi guys! I'm Nita and I run a small business dedicated to creating
-              unique and handmade items that bring joy and creativity to your
-              everyday life. From custom accessories to personalized gifts, I
-              take pride in my craftsmanship and attention to detail. Explore my
-              collection and find something special made just for you!
+            
+              
+              hi!! I'm Anita, the Artist behind the brand. 
+              Welcome to my little corner of the internet where i share the art that i  pour my heart and soul into
+               . Whether it’s a custom piece tailored to your personality,
+                or a ready-made creation to brighten your day. Every piece is completely 
+                handmade by me, with lots of love, care and of course a little crash out
+                 here and there : ) .
+                Anyways, Thank you so much for visiting!
+
+        
             </p>
             <a
               href="{{ url_for('about') }}"
@@ -87,10 +62,10 @@
   </div>
 </section>
 <!--- ......YouTube Section............. -->
-<section class="py-5 card-body">
+<section class="youtube-section py-5">
   <div class="container">
     <div class="text-center mb-5">
-      <h2 class="display-6 fw-bold">Follow me on YouTube</h2>
+      <h2 class="section-heading display-6 fw-bold">Follow me on YouTube</h2>
       <p class="fs-5 text-secondary">
         Watch behind-the-scenes content, tutorials, and more!
       </p>
