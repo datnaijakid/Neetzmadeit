@@ -2,7 +2,10 @@ from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request, session, send_from_directory
 import os
 import urllib.request
+import urllib.parse
 import urllib.error
+import ssl
+import shutil
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 import sqlite3
@@ -25,7 +28,10 @@ ckeditor = CKEditor(app)
 bootstrap = Bootstrap(app)
 
 # Ensure upload folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except Exception:
+    pass
 
 def send_web3forms(form_data):
     """
@@ -72,13 +78,94 @@ def send_web3forms(form_data):
         print(f"[Web3Forms Error] Exception occurred: {e}")
         return False, str(e)
 
-# Database helper functions & wrappers (Supports both PostgreSQL / Neon and SQLite)
+# Database helper functions & wrappers (Supports pg8000 for pure-Python Vercel/Lambda, psycopg2, and SQLite)
+try:
+    import pg8000.dbapi
+except ImportError:
+    pg8000 = None
+
 try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
 except ImportError:
     psycopg2 = None
     RealDictCursor = None
+
+class PG8000CursorWrapper:
+    def __init__(self, cur):
+        self.cur = cur
+
+    def fetchone(self):
+        row = self.cur.fetchone()
+        if row is None:
+            return None
+        if not self.cur.description:
+            return row
+        cols = [col[0] for col in self.cur.description]
+        return dict(zip(cols, row))
+
+    def fetchall(self):
+        rows = self.cur.fetchall()
+        if not rows:
+            return []
+        if not self.cur.description:
+            return rows
+        cols = [col[0] for col in self.cur.description]
+        return [dict(zip(cols, row)) for row in rows]
+
+class PG8000ConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+        self.cur = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.cur:
+            try:
+                self.cur.close()
+            except Exception:
+                pass
+        if exc_type is not None:
+            try:
+                self.conn.rollback()
+            except Exception:
+                pass
+        try:
+            self.conn.close()
+        except Exception:
+            pass
+
+    def execute(self, query, params=None):
+        # Convert SQLite '?' placeholders to PostgreSQL '%s'
+        pg_query = query.replace('?', '%s')
+        # Quote table name "user" since it is a reserved word in PostgreSQL
+        pg_query = re.sub(r'(?i)\bFROM user\b', 'FROM "user"', pg_query)
+        pg_query = re.sub(r'(?i)\bINTO user\b', 'INTO "user"', pg_query)
+        pg_query = re.sub(r'(?i)\bUPDATE user\b', 'UPDATE "user"', pg_query)
+
+        # Convert SQLite boolean integer syntax (is_featured = 1 / 0) to Postgres boolean (is_featured = TRUE / FALSE)
+        pg_query = re.sub(r'\bis_featured\s*=\s*1\b', 'is_featured = TRUE', pg_query, flags=re.IGNORECASE)
+        pg_query = re.sub(r'\bis_featured\s*=\s*0\b', 'is_featured = FALSE', pg_query, flags=re.IGNORECASE)
+
+        # Convert SQLite INSERT OR REPLACE for site_settings to PostgreSQL ON CONFLICT
+        if "INSERT OR REPLACE INTO site_settings" in pg_query:
+            pg_query = """
+                INSERT INTO site_settings (key, value)
+                VALUES (%s, %s)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+            """
+
+        self.cur = self.conn.cursor()
+        if params:
+            self.cur.execute(pg_query, params)
+        else:
+            self.cur.execute(pg_query)
+        return PG8000CursorWrapper(self.cur)
+
+    def commit(self):
+        self.conn.commit()
 
 class PostgresConnectionWrapper:
     def __init__(self, conn):
@@ -90,10 +177,19 @@ class PostgresConnectionWrapper:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.cur:
-            self.cur.close()
+            try:
+                self.cur.close()
+            except Exception:
+                pass
         if exc_type is not None:
-            self.conn.rollback()
-        self.conn.close()
+            try:
+                self.conn.rollback()
+            except Exception:
+                pass
+        try:
+            self.conn.close()
+        except Exception:
+            pass
 
     def execute(self, query, params=None):
         # Convert SQLite '?' placeholders to PostgreSQL '%s'
@@ -134,8 +230,14 @@ class SQLiteConnectionWrapper:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            self.conn.rollback()
-        self.conn.close()
+            try:
+                self.conn.rollback()
+            except Exception:
+                pass
+        try:
+            self.conn.close()
+        except Exception:
+            pass
 
     def execute(self, query, params=None):
         if params:
@@ -150,20 +252,51 @@ def get_db():
     if database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')):
         if database_url.startswith('postgres://'):
             database_url = database_url.replace('postgres://', 'postgresql://', 1)
-        # Remove channel_binding parameter if present as some libpq versions on AWS Lambda / Vercel do not support it
-        if 'channel_binding=' in database_url:
-            database_url = re.sub(r'[?&]channel_binding=[^&]+', '', database_url)
-            if '?' not in database_url and '&' in database_url:
-                database_url = database_url.replace('&', '?', 1)
 
-        if psycopg2 is None:
-            raise RuntimeError("psycopg2 is not installed. Please install psycopg2-binary to connect to PostgreSQL.")
-        conn = psycopg2.connect(database_url)
-        return PostgresConnectionWrapper(conn)
+        # First try pure-Python pg8000 (100% reliable on Vercel Serverless / AWS Lambda)
+        if pg8000 is not None:
+            try:
+                url = urllib.parse.urlparse(database_url)
+                ssl_context = ssl.create_default_context()
+                conn = pg8000.dbapi.connect(
+                    user=url.username,
+                    password=url.password,
+                    host=url.hostname,
+                    port=url.port or 5432,
+                    database=url.path.lstrip('/'),
+                    ssl_context=ssl_context
+                )
+                return PG8000ConnectionWrapper(conn)
+            except Exception as e:
+                print(f"[pg8000 Warning] Connection failed: {e}. Trying psycopg2...")
+
+        # Fallback to psycopg2
+        if psycopg2 is not None:
+            clean_url = database_url
+            if 'channel_binding=' in clean_url:
+                clean_url = re.sub(r'[?&]channel_binding=[^&]+', '', clean_url)
+                if '?' not in clean_url and '&' in clean_url:
+                    clean_url = clean_url.replace('&', '?', 1)
+            conn = psycopg2.connect(clean_url)
+            return PostgresConnectionWrapper(conn)
+
+        raise RuntimeError("Neither pg8000 nor psycopg2 could connect to PostgreSQL.")
+
+    # SQLite fallback (handles Vercel read-only filesystem safely)
+    tmp_db = '/tmp/neetzmadeit.db'
+    if (os.environ.get('VERCEL') or not os.access('.', os.W_OK)) and os.path.exists('neetzmadeit.db'):
+        if not os.path.exists(tmp_db):
+            try:
+                shutil.copyfile('neetzmadeit.db', tmp_db)
+            except Exception:
+                pass
+        db_path = tmp_db if os.path.exists(tmp_db) else 'neetzmadeit.db'
+        conn = sqlite3.connect(db_path)
     else:
         conn = sqlite3.connect('neetzmadeit.db')
-        conn.row_factory = sqlite3.Row
-        return SQLiteConnectionWrapper(conn)
+
+    conn.row_factory = sqlite3.Row
+    return SQLiteConnectionWrapper(conn)
 
 def init_db():
     try:
