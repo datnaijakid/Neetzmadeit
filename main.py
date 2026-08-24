@@ -103,6 +103,10 @@ class PostgresConnectionWrapper:
         pg_query = re.sub(r'(?i)\bINTO user\b', 'INTO "user"', pg_query)
         pg_query = re.sub(r'(?i)\bUPDATE user\b', 'UPDATE "user"', pg_query)
 
+        # Convert SQLite boolean integer syntax (is_featured = 1 / 0) to Postgres boolean (is_featured = TRUE / FALSE)
+        pg_query = re.sub(r'\bis_featured\s*=\s*1\b', 'is_featured = TRUE', pg_query, flags=re.IGNORECASE)
+        pg_query = re.sub(r'\bis_featured\s*=\s*0\b', 'is_featured = FALSE', pg_query, flags=re.IGNORECASE)
+
         # Convert SQLite INSERT OR REPLACE for site_settings to PostgreSQL ON CONFLICT
         if "INSERT OR REPLACE INTO site_settings" in pg_query:
             pg_query = """
@@ -146,6 +150,12 @@ def get_db():
     if database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')):
         if database_url.startswith('postgres://'):
             database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        # Remove channel_binding parameter if present as some libpq versions on AWS Lambda / Vercel do not support it
+        if 'channel_binding=' in database_url:
+            database_url = re.sub(r'[?&]channel_binding=[^&]+', '', database_url)
+            if '?' not in database_url and '&' in database_url:
+                database_url = database_url.replace('&', '?', 1)
+
         if psycopg2 is None:
             raise RuntimeError("psycopg2 is not installed. Please install psycopg2-binary to connect to PostgreSQL.")
         conn = psycopg2.connect(database_url)
@@ -156,83 +166,86 @@ def get_db():
         return SQLiteConnectionWrapper(conn)
 
 def init_db():
-    database_url = os.environ.get('DATABASE_URL', '').strip()
-    is_postgres = bool(database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')))
+    try:
+        database_url = os.environ.get('DATABASE_URL', '').strip()
+        is_postgres = bool(database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')))
 
-    with get_db() as db:
-        if is_postgres:
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS "user" (
-                    id SERIAL PRIMARY KEY,
-                    username TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL
-                )
-            ''')
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS product (
-                    id SERIAL PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    description TEXT NOT NULL,
-                    price DOUBLE PRECISION NOT NULL,
-                    images TEXT NOT NULL,
-                    is_featured BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS site_settings (
-                    id SERIAL PRIMARY KEY,
-                    key TEXT UNIQUE NOT NULL,
-                    value TEXT NOT NULL
-                )
-            ''')
-        else:
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS user (
-                    id INTEGER PRIMARY KEY,
-                    username TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL
-                )
-            ''')
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS product (
-                    id INTEGER PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    description TEXT NOT NULL,
-                    price REAL NOT NULL,
-                    images TEXT NOT NULL,
-                    is_featured BOOLEAN DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            db.execute('''
-                CREATE TABLE IF NOT EXISTS site_settings (
-                    id INTEGER PRIMARY KEY,
-                    key TEXT UNIQUE NOT NULL,
-                    value TEXT NOT NULL
-                )
-            ''')
+        with get_db() as db:
+            if is_postgres:
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS "user" (
+                        id SERIAL PRIMARY KEY,
+                        username TEXT UNIQUE NOT NULL,
+                        password_hash TEXT NOT NULL
+                    )
+                ''')
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS product (
+                        id SERIAL PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        price DOUBLE PRECISION NOT NULL,
+                        images TEXT NOT NULL,
+                        is_featured BOOLEAN DEFAULT FALSE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS site_settings (
+                        id SERIAL PRIMARY KEY,
+                        key TEXT UNIQUE NOT NULL,
+                        value TEXT NOT NULL
+                    )
+                ''')
+            else:
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS user (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username TEXT UNIQUE NOT NULL,
+                        password_hash TEXT NOT NULL
+                    )
+                ''')
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS product (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
+                        description TEXT NOT NULL,
+                        price REAL NOT NULL,
+                        images TEXT NOT NULL,
+                        is_featured BOOLEAN DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                db.execute('''
+                    CREATE TABLE IF NOT EXISTS site_settings (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        key TEXT UNIQUE NOT NULL,
+                        value TEXT NOT NULL
+                    )
+                ''')
 
-        # Create initial admin user if none exists
-        existing_user = db.execute('SELECT id, username FROM user LIMIT 1').fetchone()
-        admin_username = 'anita'
-        admin_password = 'pasnita0204'
-        password_hash = generate_password_hash(admin_password)
+            # Create initial admin user if none exists
+            existing_user = db.execute('SELECT id, username FROM user LIMIT 1').fetchone()
+            admin_username = 'anita'
+            admin_password = 'pasnita0204'
+            password_hash = generate_password_hash(admin_password)
 
-        if not existing_user:
-            db.execute(
-                'INSERT INTO user (username, password_hash) VALUES (?, ?)',
-                (admin_username, password_hash),
-            )
-            print(f'Created initial admin user: {admin_username}')
-        elif existing_user['username'] == 'admin':
-            db.execute(
-                'UPDATE user SET username = ?, password_hash = ? WHERE id = ?',
-                (admin_username, password_hash, existing_user['id']),
-            )
-            print(f'Updated default admin credentials to: {admin_username}')
+            if not existing_user:
+                db.execute(
+                    'INSERT INTO user (username, password_hash) VALUES (?, ?)',
+                    (admin_username, password_hash),
+                )
+                print(f'Created initial admin user: {admin_username}')
+            elif existing_user['username'] == 'admin':
+                db.execute(
+                    'UPDATE user SET username = ?, password_hash = ? WHERE id = ?',
+                    (admin_username, password_hash, existing_user['id']),
+                )
+                print(f'Updated default admin credentials to: {admin_username}')
 
-        db.commit()
+            db.commit()
+    except Exception as e:
+        print(f"[init_db Warning] Could not initialize database on startup (will retry on first request): {e}")
 
 # Initialize database
 init_db()
@@ -342,7 +355,7 @@ def cart_summary():
 @app.route('/')
 def home():
     with get_db() as db:
-        featured_products = db.execute('SELECT * FROM product WHERE is_featured = 1 ORDER BY created_at DESC').fetchall()
+        featured_products = db.execute('SELECT * FROM product WHERE is_featured = TRUE ORDER BY created_at DESC').fetchall()
         youtube_setting = db.execute('SELECT value FROM site_settings WHERE key = ?', ('youtube_video',)).fetchone()
         youtube_channel = youtube_setting['value'] if youtube_setting else 'neetzmadeit'
         preview_setting = db.execute('SELECT value FROM site_settings WHERE key = ?', ('preview_video',)).fetchone()
@@ -374,7 +387,7 @@ def product_detail(product_id):
             abort(404)
         images = json.loads(product['images']) if product['images'] else []
         related_products = db.execute(
-            'SELECT * FROM product WHERE is_featured = 1 AND id != ? ORDER BY created_at DESC LIMIT 4',
+            'SELECT * FROM product WHERE is_featured = TRUE AND id != ? ORDER BY created_at DESC LIMIT 4',
             (product_id,),
         ).fetchall()
     return render_template(
