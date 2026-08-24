@@ -1,3 +1,4 @@
+import uuid
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request, session, send_from_directory
 import os
@@ -73,16 +74,76 @@ class VercelWSGIMiddleware:
 
 app.wsgi_app = VercelWSGIMiddleware(app.wsgi_app)
 
-def send_web3forms(form_data):
+def build_multipart_form_data(fields, files=None):
+    """Builds multipart/form-data body and Content-Type header using standard library."""
+    boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
+    body = bytearray()
+
+    for key, value in fields.items():
+        body.extend(f'--{boundary}\r\n'.encode('utf-8'))
+        body.extend(f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode('utf-8'))
+        body.extend(str(value).encode('utf-8'))
+        body.extend(b'\r\n')
+
+    if files:
+        for field_name, (filename, file_bytes, content_type) in files.items():
+            body.extend(f'--{boundary}\r\n'.encode('utf-8'))
+            body.extend(f'Content-Disposition: form-data; name="{field_name}"; filename="{filename}"\r\n'.encode('utf-8'))
+            body.extend(f'Content-Type: {content_type}\r\n\r\n'.encode('utf-8'))
+            body.extend(file_bytes)
+            body.extend(b'\r\n')
+
+    body.extend(f'--{boundary}--\r\n'.encode('utf-8'))
+    content_type_header = f'multipart/form-data; boundary={boundary}'
+    return bytes(body), content_type_header
+
+def send_web3forms(form_data, attachment=None):
     """
     Sends form data using the Web3Forms API (https://api.web3forms.com/submit).
     Requires WEB3FORMS_ACCESS_KEY in environment variables.
+    Optional attachment: {'filename': str, 'bytes': bytes, 'content_type': str}
     """
     access_key = os.environ.get('WEB3FORMS_ACCESS_KEY', '').strip()
     if not access_key:
         print("[Web3Forms Warning] WEB3FORMS_ACCESS_KEY is not set in environment variables.")
         return False, "Form service is not configured. Please set WEB3FORMS_ACCESS_KEY."
 
+    # If an attachment is provided, try sending via multipart/form-data first
+    if attachment and attachment.get('bytes'):
+        try:
+            fields = {
+                "access_key": access_key,
+                "from_name": "Neetzmadeit Website",
+                **form_data
+            }
+            files = {
+                "attachment": (
+                    attachment.get('filename', 'inspo_photo.jpg'),
+                    attachment.get('bytes'),
+                    attachment.get('content_type', 'application/octet-stream')
+                )
+            }
+            body, content_type_hdr = build_multipart_form_data(fields, files)
+            req = urllib.request.Request(
+                "https://api.web3forms.com/submit",
+                data=body,
+                headers={
+                    "Content-Type": content_type_hdr,
+                    "Accept": "application/json",
+                    "User-Agent": "Neetzmadeit-Flask-App"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=15) as response:
+                res_body = json.loads(response.read().decode('utf-8'))
+                if res_body.get('success'):
+                    print(f"[Web3Forms Success] Form with attachment sent: {form_data.get('subject', 'No Subject')}")
+                    return True, "Message sent successfully."
+                else:
+                    print(f"[Web3Forms Multipart Notice] Attachment submission not accepted: {res_body.get('message')}. Falling back to standard format.")
+        except Exception as e:
+            print(f"[Web3Forms Multipart Notice] Attachment upload failed/unsupported ({e}). Falling back to standard format.")
+
+    # Fallback / standard JSON submission
     payload = {
         "access_key": access_key,
         "from_name": "Neetzmadeit Website",
@@ -492,38 +553,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Helper functions
-def get_cart():
-    return session.get('cart', {})
-
-def save_cart(cart):
-    session['cart'] = cart
-    session.modified = True
-
-def cart_summary():
-    cart = get_cart()
-    items = []
-    total = 0
-    with get_db() as db:
-        for product_id, quantity in cart.items():
-            product = db.execute('SELECT * FROM product WHERE id = ?', (int(product_id),)).fetchone()
-            if not product:
-                continue
-            subtotal = product['price'] * quantity
-            total += subtotal
-            images = json.loads(product['images']) if product['images'] else []
-            main_image = images[0] if images else 'placeholder.jpg'
-            items.append({
-                'id': product['id'],
-                'name': product['name'],
-                'description': product['description'],
-                'price': product['price'],
-                'quantity': quantity,
-                'subtotal': subtotal,
-                'image': main_image,
-            })
-    return items, total
-
 # Routes
 @app.route('/')
 def home():
@@ -649,6 +678,7 @@ def custom_order():
         other = request.form.get('other', '').strip()
         inspo_photo = request.files.get('inspo_photo')
         photo_name = None
+        attachment_info = None
 
         if not name or not description:
             flash('Please fill out your name and describe your custom order.', 'danger')
@@ -671,12 +701,28 @@ def custom_order():
                 flash('Please choose an inspiration photo smaller than 5 MB.', 'danger')
                 return redirect(url_for('custom_order'))
 
-            # Save inspiration photo to custom_orders folder
-            custom_orders_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'custom_orders')
-            os.makedirs(custom_orders_dir, exist_ok=True)
             photo_name = f"{int(time.time())}_{raw_photo_name}"
-            with open(os.path.join(custom_orders_dir, photo_name), 'wb') as f:
-                f.write(photo_data)
+            mime_types = {
+                'png': 'image/png',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'webp': 'image/webp'
+            }
+            attachment_info = {
+                'filename': raw_photo_name,
+                'bytes': photo_data,
+                'content_type': mime_types.get(photo_extension, 'image/jpeg')
+            }
+
+            # Attempt saving inspiration photo locally if running in a writable environment
+            # Guard against read-only serverless filesystems (e.g. Vercel/AWS Lambda)
+            try:
+                custom_orders_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'custom_orders')
+                os.makedirs(custom_orders_dir, exist_ok=True)
+                with open(os.path.join(custom_orders_dir, photo_name), 'wb') as f:
+                    f.write(photo_data)
+            except OSError:
+                pass
 
         form_data = {
             "subject": f"Custom Order Request from {name}",
@@ -688,10 +734,10 @@ def custom_order():
             "Instagram": instagram or "Not provided",
             "TikTok": tiktok or "Not provided",
             "Other Contact": other or "Not provided",
-            "Inspiration Photo": photo_name or "No photo uploaded"
+            "Inspiration Photo": raw_photo_name if (inspo_photo and inspo_photo.filename) else "No photo uploaded"
         }
 
-        success, err = send_web3forms(form_data)
+        success, err = send_web3forms(form_data, attachment=attachment_info)
         if success:
             flash(f"Thank you {name}! Your custom order request has been sent. I'll be in touch soon!", "success")
         else:
@@ -708,44 +754,37 @@ def checkout():
         return redirect(url_for('shop'))
 
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        email = request.form.get('email', '').strip()
-        phone = request.form.get('phone', '').strip()
-        instagram = request.form.get('instagram', '').strip()
-        tiktok = request.form.get('tiktok', '').strip()
-        other = request.form.get('other', '').strip()
+        name = request.form.get('name')
+        email = request.form.get('email')
+        phone = request.form.get('phone')
+        address = request.form.get('address')
+        city = request.form.get('city')
+        postal_code = request.form.get('postal_code')
+        shipping_country = request.form.get('shipping_country')
+        notes = request.form.get('notes', '')
 
-        if not name:
-            flash('Please provide your name.', 'danger')
-            return redirect(url_for('checkout'))
-
-        if not (email or phone or instagram or tiktok or other):
-            flash('Please provide at least one contact method.', 'danger')
-            return redirect(url_for('checkout'))
-
-        order_items_text = "\n".join([
-            f"• {item['name']} x {item['quantity']} @ ${item['price']:.2f} = ${item['subtotal']:.2f}"
-            for item in cart_items
-        ])
+        # Format items for email
+        items_summary = []
+        for item in cart_items:
+            items_summary.append(f"- {item['name']} x{item['quantity']} (${item['subtotal']:.2f})")
+        items_text = "\n".join(items_summary)
 
         form_data = {
             "subject": f"New Order from {name} - ${total:.2f}",
-            "Form Type": "New Store Order",
+            "Form Type": "Checkout Order",
             "Customer Name": name,
-            "Email": email or "Not provided",
-            "Phone": phone or "Not provided",
-            "Instagram": instagram or "Not provided",
-            "TikTok": tiktok or "Not provided",
-            "Other Contact": other or "Not provided",
-            "Order Items": order_items_text,
-            "Total Amount": f"${total:.2f}"
+            "Email": email,
+            "Phone": phone,
+            "Shipping Address": f"{address}, {city}, {postal_code}, {shipping_country}",
+            "Order Items": items_text,
+            "Total Amount": f"${total:.2f}",
+            "Customer Notes": notes or "None"
         }
 
         success, err = send_web3forms(form_data)
         if success:
-            flash(f"Thank you {name}! Your order has been placed. I'll be in touch soon!", "success")
-            session['cart'] = {}
-            session.modified = True
+            session.pop('cart', None)
+            flash('Thank you! Your order request has been received. We will contact you soon with payment and shipping details.', 'success')
             return redirect(url_for('home'))
         else:
             flash("There was an error placing your order. Please try again later.", "danger")
@@ -810,7 +849,10 @@ def admin_add_product():
                 # Add timestamp to avoid conflicts
                 filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
+                try:
+                    file.save(file_path)
+                except OSError:
+                    pass
                 images.append(filename)
 
         if not images:
@@ -852,7 +894,10 @@ def admin_edit_product(product_id):
                 filename = secure_filename(file.filename)
                 filename = f"{int(time.time())}_{filename}"
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
+                try:
+                    file.save(file_path)
+                except OSError:
+                    pass
                 new_images.append(filename)
 
         # Keep existing images that weren't replaced
