@@ -419,16 +419,34 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.02em;
 }
 
-.how-to-order-trigger {
-    border: 1.5px solid #7F6152;
-    background-color: rgba(255, 249, 241, 0.65);
-    color: #5C2434;
+.shop-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 1.15rem;
+}
+
+.how-to-order-trigger,
+.custom-order-shop-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: 0.03em;
     padding: 0.55rem 1.6rem;
+    border-radius: 999px;
+    text-decoration: none;
     transition: all 0.25s ease;
+}
+
+.how-to-order-trigger {
+    border: 1.5px solid #7F6152;
+    background-color: rgba(255, 249, 241, 0.7);
+    color: #5C2434;
     backdrop-filter: blur(4px);
 }
 
@@ -438,6 +456,27 @@ h1, h2, h3, h4, h5, h6 {
     color: #FFF9F1;
     transform: translateY(-2px);
     box-shadow: 0 0.5rem 1.2rem rgba(92, 36, 52, 0.16);
+}
+
+.custom-order-shop-btn {
+    border: 1.5px solid #5C2434;
+    background-color: #5C2434;
+    color: #FFF9F1;
+    box-shadow: 0 0.4rem 1rem rgba(92, 36, 52, 0.14);
+}
+
+.custom-order-shop-btn:hover {
+    background-color: #7A3348;
+    border-color: #7A3348;
+    color: #FFF9F1;
+    transform: translateY(-2px);
+    box-shadow: 0 0.65rem 1.4rem rgba(92, 36, 52, 0.22);
+}
+
+.custom-order-shop-btn span {
+    margin-right: 0.35rem;
+    font-size: 1.15em;
+    line-height: 1;
 }
 
 .view-cart-btn {

@@ -1,9 +1,8 @@
 from datetime import date
 from flask import Flask, abort, render_template, redirect, url_for, flash, request, session, send_from_directory
 import os
-import smtplib
-import ssl
-from email.message import EmailMessage
+import urllib.request
+import urllib.error
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 import sqlite3
@@ -13,6 +12,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 import time
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = b'\xee\xf8\xdb>\xf2\xda\xea,\x1e&\x10\xca\xa2\x0c\n3"-\x11&\'\xdf&\x0e'
@@ -25,42 +27,193 @@ bootstrap = Bootstrap(app)
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Database helper functions
+def send_web3forms(form_data):
+    """
+    Sends form data using the Web3Forms API (https://api.web3forms.com/submit).
+    Requires WEB3FORMS_ACCESS_KEY in environment variables.
+    """
+    access_key = os.environ.get('WEB3FORMS_ACCESS_KEY', '').strip()
+    if not access_key:
+        print("[Web3Forms Warning] WEB3FORMS_ACCESS_KEY is not set in environment variables.")
+        return False, "Form service is not configured. Please set WEB3FORMS_ACCESS_KEY."
+
+    payload = {
+        "access_key": access_key,
+        "from_name": "Neetzmadeit Website",
+        **form_data
+    }
+
+    data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(
+        "https://api.web3forms.com/submit",
+        data=data,
+        headers={
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "Neetzmadeit-Flask-App"
+        }
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=12) as response:
+            res_body = json.loads(response.read().decode('utf-8'))
+            if res_body.get('success'):
+                print(f"[Web3Forms Success] Form sent: {payload.get('subject', 'No Subject')}")
+                return True, "Message sent successfully."
+            else:
+                msg = res_body.get('message', 'Unknown error')
+                print(f"[Web3Forms Error] {msg}")
+                return False, msg
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8', errors='ignore')
+        print(f"[Web3Forms Error] HTTP {e.code}: {error_body}")
+        return False, f"Web3Forms HTTP {e.code}: {error_body}"
+    except Exception as e:
+        print(f"[Web3Forms Error] Exception occurred: {e}")
+        return False, str(e)
+
+# Database helper functions & wrappers (Supports both PostgreSQL / Neon and SQLite)
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+except ImportError:
+    psycopg2 = None
+    RealDictCursor = None
+
+class PostgresConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+        self.cur = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.cur:
+            self.cur.close()
+        if exc_type is not None:
+            self.conn.rollback()
+        self.conn.close()
+
+    def execute(self, query, params=None):
+        # Convert SQLite '?' placeholders to PostgreSQL '%s'
+        pg_query = query.replace('?', '%s')
+        # Quote table name "user" since it is a reserved word in PostgreSQL
+        pg_query = re.sub(r'(?i)\bFROM user\b', 'FROM "user"', pg_query)
+        pg_query = re.sub(r'(?i)\bINTO user\b', 'INTO "user"', pg_query)
+        pg_query = re.sub(r'(?i)\bUPDATE user\b', 'UPDATE "user"', pg_query)
+
+        # Convert SQLite INSERT OR REPLACE for site_settings to PostgreSQL ON CONFLICT
+        if "INSERT OR REPLACE INTO site_settings" in pg_query:
+            pg_query = """
+                INSERT INTO site_settings (key, value)
+                VALUES (%s, %s)
+                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+            """
+
+        self.cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        if params:
+            self.cur.execute(pg_query, params)
+        else:
+            self.cur.execute(pg_query)
+        return self.cur
+
+    def commit(self):
+        self.conn.commit()
+
+class SQLiteConnectionWrapper:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.conn.rollback()
+        self.conn.close()
+
+    def execute(self, query, params=None):
+        if params:
+            return self.conn.execute(query, params)
+        return self.conn.execute(query)
+
+    def commit(self):
+        self.conn.commit()
+
 def get_db():
-    db = sqlite3.connect('neetzmadeit.db')
-    db.row_factory = sqlite3.Row
-    return db
+    database_url = os.environ.get('DATABASE_URL', '').strip()
+    if database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')):
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        if psycopg2 is None:
+            raise RuntimeError("psycopg2 is not installed. Please install psycopg2-binary to connect to PostgreSQL.")
+        conn = psycopg2.connect(database_url)
+        return PostgresConnectionWrapper(conn)
+    else:
+        conn = sqlite3.connect('neetzmadeit.db')
+        conn.row_factory = sqlite3.Row
+        return SQLiteConnectionWrapper(conn)
 
 def init_db():
-    with get_db() as db:
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS user (
-                id INTEGER PRIMARY KEY,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL
-            )
-        ''')
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS product (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                price REAL NOT NULL,
-                images TEXT NOT NULL,
-                is_featured BOOLEAN DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        db.execute('''
-            CREATE TABLE IF NOT EXISTS site_settings (
-                id INTEGER PRIMARY KEY,
-                key TEXT UNIQUE NOT NULL,
-                value TEXT NOT NULL
-            )
-        ''')
+    database_url = os.environ.get('DATABASE_URL', '').strip()
+    is_postgres = bool(database_url and (database_url.startswith('postgres://') or database_url.startswith('postgresql://')))
 
-        # Create an initial admin user if none exists. If the default
-        # admin user is already present, update it to the new credentials.
+    with get_db() as db:
+        if is_postgres:
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS "user" (
+                    id SERIAL PRIMARY KEY,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL
+                )
+            ''')
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS product (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    price DOUBLE PRECISION NOT NULL,
+                    images TEXT NOT NULL,
+                    is_featured BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS site_settings (
+                    id SERIAL PRIMARY KEY,
+                    key TEXT UNIQUE NOT NULL,
+                    value TEXT NOT NULL
+                )
+            ''')
+        else:
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS user (
+                    id INTEGER PRIMARY KEY,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL
+                )
+            ''')
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS product (
+                    id INTEGER PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    price REAL NOT NULL,
+                    images TEXT NOT NULL,
+                    is_featured BOOLEAN DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            db.execute('''
+                CREATE TABLE IF NOT EXISTS site_settings (
+                    id INTEGER PRIMARY KEY,
+                    key TEXT UNIQUE NOT NULL,
+                    value TEXT NOT NULL
+                )
+            ''')
+
+        # Create initial admin user if none exists
         existing_user = db.execute('SELECT id, username FROM user LIMIT 1').fetchone()
         admin_username = 'anita'
         admin_password = 'pasnita0204'
@@ -242,41 +395,18 @@ def contact():
             flash('Please fill out all fields.', 'danger')
             return redirect(url_for('contact'))
 
-        sender = os.environ.get('EMAIL_ADDRESS', '')
-        password = os.environ.get('EMAIL_PASSWORD', '')
-        smtp_server = 'smtp.gmail.com'
-        smtp_port = 587
+        form_data = {
+            "subject": f"Contact Form Message from {name}",
+            "Form Type": "Contact Form",
+            "Name": name,
+            "Email": email,
+            "Message": message
+        }
 
-        msg = EmailMessage()
-        msg['Subject'] = f'Contact form — {name} <{email}>'
-        msg['To'] = 'neetzmade@gmail.com'
-        msg['Reply-To'] = f'{name} <{email}>'
-        msg['From'] = f'{name} via Neetzmadeit <{sender}>'
-
-        plain = f"You received a new message from the website contact form.\n\nName: {name}\nEmail: {email}\n\nMessage:\n{message}"
-        html = f"""<html><body>
-        <h2>New message from website</h2>
-        <p><strong>Name:</strong> {name}<br>
-        <strong>Email:</strong> {email}</p>
-        <hr>
-        <p>{message.replace('\n','<br>')}</p>
-        </body></html>"""
-
-        msg.set_content(plain)
-        msg.add_alternative(html, subtype='html')
-
-        if not (sender and password):
-            flash("Email not sent. Server credentials not configured (set EMAIL_ADDRESS and EMAIL_PASSWORD).", "warning")
-            return redirect(url_for('contact'))
-
-        try:
-            context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls(context=context)
-                server.login(sender, password)
-                server.send_message(msg)
-            flash(f"Thank you {name} for your message! I'll be in touch with you shortly", "success")
-        except Exception:
+        success, err = send_web3forms(form_data)
+        if success:
+            flash(f"Thank you {name} for your message! I'll be in touch with you shortly.", "success")
+        else:
             flash("There was an error sending your message. Please try again later.", "danger")
         return redirect(url_for('contact'))
     return render_template('contact.html')
@@ -332,9 +462,7 @@ def custom_order():
         tiktok = request.form.get('tiktok', '').strip()
         other = request.form.get('other', '').strip()
         inspo_photo = request.files.get('inspo_photo')
-        photo_data = None
         photo_name = None
-        photo_type = None
 
         if not name or not description:
             flash('Please fill out your name and describe your custom order.', 'danger')
@@ -345,10 +473,10 @@ def custom_order():
             return redirect(url_for('custom_order'))
 
         if inspo_photo and inspo_photo.filename:
-            photo_name = secure_filename(inspo_photo.filename)
+            raw_photo_name = secure_filename(inspo_photo.filename)
             allowed_photo_extensions = {'png', 'jpg', 'jpeg', 'webp'}
-            photo_extension = photo_name.rsplit('.', 1)[-1].lower() if '.' in photo_name else ''
-            if not photo_name or photo_extension not in allowed_photo_extensions:
+            photo_extension = raw_photo_name.rsplit('.', 1)[-1].lower() if '.' in raw_photo_name else ''
+            if not raw_photo_name or photo_extension not in allowed_photo_extensions:
                 flash('Please upload a PNG, JPG, JPEG, or WEBP inspiration photo.', 'danger')
                 return redirect(url_for('custom_order'))
 
@@ -356,83 +484,31 @@ def custom_order():
             if len(photo_data) > 5 * 1024 * 1024:
                 flash('Please choose an inspiration photo smaller than 5 MB.', 'danger')
                 return redirect(url_for('custom_order'))
-            photo_type = inspo_photo.mimetype or 'application/octet-stream'
 
-        sender = os.environ.get('EMAIL_ADDRESS', '')
-        password = os.environ.get('EMAIL_PASSWORD', '')
-        smtp_server = 'smtp.gmail.com'
-        smtp_port = 587
+            # Save inspiration photo to custom_orders folder
+            custom_orders_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'custom_orders')
+            os.makedirs(custom_orders_dir, exist_ok=True)
+            photo_name = f"{int(time.time())}_{raw_photo_name}"
+            with open(os.path.join(custom_orders_dir, photo_name), 'wb') as f:
+                f.write(photo_data)
 
-        msg = EmailMessage()
-        msg['Subject'] = f'Custom Order Request from {name}'
-        msg['To'] = 'neetzmade@gmail.com'
-        if email:
-            msg['Reply-To'] = email
-        if sender:
-            msg['From'] = sender
+        form_data = {
+            "subject": f"Custom Order Request from {name}",
+            "Form Type": "Custom Order Request",
+            "Customer Name": name,
+            "Description": description,
+            "Email": email or "Not provided",
+            "Phone": phone or "Not provided",
+            "Instagram": instagram or "Not provided",
+            "TikTok": tiktok or "Not provided",
+            "Other Contact": other or "Not provided",
+            "Inspiration Photo": photo_name or "No photo uploaded"
+        }
 
-        contact_info = []
-        if email:
-            contact_info.append(f"<strong>Email:</strong> {email}")
-        if phone:
-            contact_info.append(f"<strong>Phone:</strong> {phone}")
-        if instagram:
-            contact_info.append(f"<strong>Instagram:</strong> {instagram}")
-        if tiktok:
-            contact_info.append(f"<strong>TikTok:</strong> {tiktok}")
-        if other:
-            contact_info.append(f"<strong>Other:</strong> {other}")
-
-        contact_html = "<br>".join(contact_info)
-
-        plain = f"""Custom Order Request from {name}
-
-CUSTOM REQUEST:
-{description}
-
-CONTACT INFORMATION:
-"""
-        if email:
-            plain += f"Email: {email}\n"
-        if phone:
-            plain += f"Phone: {phone}\n"
-        if instagram:
-            plain += f"Instagram: {instagram}\n"
-        if tiktok:
-            plain += f"TikTok: {tiktok}\n"
-        if other:
-            plain += f"Other: {other}\n"
-        if photo_name:
-            plain += f"Inspiration photo attached: {photo_name}\n"
-
-        html = f"""<html><body>
-        <h2>Custom Order Request from {name}</h2>
-        <hr>
-        <h3>Custom Request:</h3>
-        <p>{description.replace(chr(10),'<br>')}</p>
-        <hr>
-        <h3>Contact Information:</h3>
-        <p>{contact_html}</p>
-        </body></html>"""
-
-        msg.set_content(plain)
-        msg.add_alternative(html, subtype='html')
-        if photo_data and photo_name:
-            maintype, subtype = photo_type.split('/', 1) if '/' in photo_type else ('application', 'octet-stream')
-            msg.add_attachment(photo_data, maintype=maintype, subtype=subtype, filename=photo_name)
-
-        if not (sender and password):
-            flash("Email not sent. Server credentials not configured.", "warning")
-            return redirect(url_for('custom_order'))
-
-        try:
-            context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls(context=context)
-                server.login(sender, password)
-                server.send_message(msg)
+        success, err = send_web3forms(form_data)
+        if success:
             flash(f"Thank you {name}! Your custom order request has been sent. I'll be in touch soon!", "success")
-        except Exception:
+        else:
             flash("There was an error sending your request. Please try again later.", "danger")
         return redirect(url_for('custom_order'))
     return render_template('custom-order.html')
@@ -461,114 +537,31 @@ def checkout():
             flash('Please provide at least one contact method.', 'danger')
             return redirect(url_for('checkout'))
 
-        sender = os.environ.get('EMAIL_ADDRESS', '')
-        password = os.environ.get('EMAIL_PASSWORD', '')
-        smtp_server = 'smtp.gmail.com'
-        smtp_port = 587
+        order_items_text = "\n".join([
+            f"• {item['name']} x {item['quantity']} @ ${item['price']:.2f} = ${item['subtotal']:.2f}"
+            for item in cart_items
+        ])
 
-        msg = EmailMessage()
-        msg['Subject'] = f'New Order from {name}'
-        msg['To'] = 'neetzmade@gmail.com'
-        if email:
-            msg['Reply-To'] = email
-        if sender:
-            msg['From'] = sender
+        form_data = {
+            "subject": f"New Order from {name} - ${total:.2f}",
+            "Form Type": "New Store Order",
+            "Customer Name": name,
+            "Email": email or "Not provided",
+            "Phone": phone or "Not provided",
+            "Instagram": instagram or "Not provided",
+            "TikTok": tiktok or "Not provided",
+            "Other Contact": other or "Not provided",
+            "Order Items": order_items_text,
+            "Total Amount": f"${total:.2f}"
+        }
 
-        contact_info = []
-        if email:
-            contact_info.append(f"<strong>Email:</strong> {email}")
-        if phone:
-            contact_info.append(f"<strong>Phone:</strong> {phone}")
-        if instagram:
-            contact_info.append(f"<strong>Instagram:</strong> {instagram}")
-        if tiktok:
-            contact_info.append(f"<strong>TikTok:</strong> {tiktok}")
-        if other:
-            contact_info.append(f"<strong>Other:</strong> {other}")
-
-        contact_html = "<br>".join(contact_info)
-
-        # Build items table
-        items_html = """
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <thead>
-                <tr style="border-bottom: 2px solid #ccc;">
-                    <th style="text-align: left; padding: 10px;">Product</th>
-                    <th style="text-align: right; padding: 10px;">Price</th>
-                    <th style="text-align: center; padding: 10px;">Qty</th>
-                    <th style="text-align: right; padding: 10px;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-
-        plain = f"""Order from {name}
-
-ORDER ITEMS:
-"""
-
-        for item in cart_items:
-            items_html += f"""
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 10px;">{item['name']}</td>
-                    <td style="text-align: right; padding: 10px;">${item['price']:.2f}</td>
-                    <td style="text-align: center; padding: 10px;">{item['quantity']}</td>
-                    <td style="text-align: right; padding: 10px;">${item['subtotal']:.2f}</td>
-                </tr>
-            """
-            plain += f"{item['name']} x {item['quantity']} @ ${item['price']:.2f} = ${item['subtotal']:.2f}\n"
-
-        items_html += f"""
-            </tbody>
-            <tfoot>
-                <tr style="border-top: 2px solid #ccc; font-weight: bold;">
-                    <td style="padding: 10px;" colspan="3">Total:</td>
-                    <td style="text-align: right; padding: 10px;">${total:.2f}</td>
-                </tr>
-            </tfoot>
-        </table>
-        """
-
-        plain += f"\nOrder Total: ${total:.2f}\n\nCONTACT INFORMATION:\n"
-        if email:
-            plain += f"Email: {email}\n"
-        if phone:
-            plain += f"Phone: {phone}\n"
-        if instagram:
-            plain += f"Instagram: {instagram}\n"
-        if tiktok:
-            plain += f"TikTok: {tiktok}\n"
-        if other:
-            plain += f"Other: {other}\n"
-
-        html = f"""<html><body>
-        <h2>New Order from {name}</h2>
-        <hr>
-        <h3>Order Items:</h3>
-        {items_html}
-        <hr>
-        <h3>Contact Information:</h3>
-        <p>{contact_html}</p>
-        </body></html>"""
-
-        msg.set_content(plain)
-        msg.add_alternative(html, subtype='html')
-
-        if not (sender and password):
-            flash("Email not sent. Server credentials not configured.", "warning")
-            return redirect(url_for('checkout'))
-
-        try:
-            context = ssl.create_default_context()
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls(context=context)
-                server.login(sender, password)
-                server.send_message(msg)
+        success, err = send_web3forms(form_data)
+        if success:
             flash(f"Thank you {name}! Your order has been placed. I'll be in touch soon!", "success")
             session['cart'] = {}
             session.modified = True
             return redirect(url_for('home'))
-        except Exception:
+        else:
             flash("There was an error placing your order. Please try again later.", "danger")
             return redirect(url_for('checkout'))
 

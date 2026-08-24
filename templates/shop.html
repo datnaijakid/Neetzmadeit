@@ -7,14 +7,22 @@ block content %}
       <p class="fs-5 text-secondary mb-3">
         Select your favorite handmade pieces and add them to your cart.
       </p>
-      <button
-        type="button"
-        class="btn btn-outline-success rounded-pill px-4 py-2 fw-semibold how-to-order-trigger"
-        data-bs-toggle="modal"
-        data-bs-target="#howToOrderModal"
-      >
-        <i class="fas fa-info-circle me-2"></i>How to Order
-      </button>
+      <div class="shop-header-actions">
+        <button
+          type="button"
+          class="btn rounded-pill how-to-order-trigger"
+          data-bs-toggle="modal"
+          data-bs-target="#howToOrderModal"
+        >
+          <i class="fas fa-info-circle me-2"></i>How to Order
+        </button>
+        <a
+          href="{{ url_for('custom_order') }}"
+          class="btn rounded-pill custom-order-shop-btn"
+        >
+          <span>୨ৎ</span> Custom Order
+        </a>
+      </div>
     </div>
 
     {% if products %}
