@@ -676,9 +676,6 @@ def custom_order():
         instagram = request.form.get('instagram', '').strip()
         tiktok = request.form.get('tiktok', '').strip()
         other = request.form.get('other', '').strip()
-        inspo_photo = request.files.get('inspo_photo')
-        photo_name = None
-        attachment_info = None
 
         if not name or not description:
             flash('Please fill out your name and describe your custom order.', 'danger')
@@ -687,42 +684,6 @@ def custom_order():
         if not (email or phone or instagram or tiktok or other):
             flash('Please provide at least one contact method.', 'danger')
             return redirect(url_for('custom_order'))
-
-        if inspo_photo and inspo_photo.filename:
-            raw_photo_name = secure_filename(inspo_photo.filename)
-            allowed_photo_extensions = {'png', 'jpg', 'jpeg', 'webp'}
-            photo_extension = raw_photo_name.rsplit('.', 1)[-1].lower() if '.' in raw_photo_name else ''
-            if not raw_photo_name or photo_extension not in allowed_photo_extensions:
-                flash('Please upload a PNG, JPG, JPEG, or WEBP inspiration photo.', 'danger')
-                return redirect(url_for('custom_order'))
-
-            photo_data = inspo_photo.read()
-            if len(photo_data) > 5 * 1024 * 1024:
-                flash('Please choose an inspiration photo smaller than 5 MB.', 'danger')
-                return redirect(url_for('custom_order'))
-
-            photo_name = f"{int(time.time())}_{raw_photo_name}"
-            mime_types = {
-                'png': 'image/png',
-                'jpg': 'image/jpeg',
-                'jpeg': 'image/jpeg',
-                'webp': 'image/webp'
-            }
-            attachment_info = {
-                'filename': raw_photo_name,
-                'bytes': photo_data,
-                'content_type': mime_types.get(photo_extension, 'image/jpeg')
-            }
-
-            # Attempt saving inspiration photo locally if running in a writable environment
-            # Guard against read-only serverless filesystems (e.g. Vercel/AWS Lambda)
-            try:
-                custom_orders_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'custom_orders')
-                os.makedirs(custom_orders_dir, exist_ok=True)
-                with open(os.path.join(custom_orders_dir, photo_name), 'wb') as f:
-                    f.write(photo_data)
-            except OSError:
-                pass
 
         form_data = {
             "subject": f"Custom Order Request from {name}",
@@ -733,11 +694,10 @@ def custom_order():
             "Phone": phone or "Not provided",
             "Instagram": instagram or "Not provided",
             "TikTok": tiktok or "Not provided",
-            "Other Contact": other or "Not provided",
-            "Inspiration Photo": raw_photo_name if (inspo_photo and inspo_photo.filename) else "No photo uploaded"
+            "Other Contact": other or "Not provided"
         }
 
-        success, err = send_web3forms(form_data, attachment=attachment_info)
+        success, err = send_web3forms(form_data)
         if success:
             flash(f"Thank you {name}! Your custom order request has been sent. I'll be in touch soon!", "success")
         else:

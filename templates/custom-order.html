@@ -40,19 +40,16 @@
           <span class="form-step">01</span>
           <div><p class="note-label mb-1">START HERE</p><h2>Tell me about your idea</h2></div>
         </div>
-        <form method="POST" action="{{ url_for('custom_order') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('custom_order') }}">
           <div class="row g-3">
-            <div class="col-md-5">
+            <div class="col-12">
               <label for="name" class="form-label">Your name <span aria-hidden="true">*</span></label>
               <input type="text" class="form-control custom-order-input" id="name" name="name" placeholder="What should I call you?" required />
-              <label for="inspo-photo" class="form-label mt-3">Upload inspo photo <span class="optional-label">(optional)</span></label>
-              <input type="file" class="form-control custom-order-input custom-order-file" id="inspo-photo" name="inspo_photo" accept="image/png,image/jpeg,image/webp" />
-              <p class="form-helper form-helper--single">PNG, JPG, or WEBP · up to 5 MB</p>
             </div>
-            <div class="col-md-7">
+            <div class="col-12">
               <label for="description" class="form-label">Your custom idea <span aria-hidden="true">*</span></label>
               <textarea class="form-control custom-order-input custom-order-textarea" id="description" name="description" rows="5" maxlength="1000" placeholder="Tell me about colours, size, style, occasion, or anything else you’re dreaming up..." required></textarea>
-              <div class="form-helper"><span>More details = more magic.</span><span id="description-count">0 / 1000</span></div>
+              <div class="form-helper"><span>I will reach out to you if more info is needed.</span><span id="description-count">0 / 1000</span></div>
             </div>
           </div>
 
