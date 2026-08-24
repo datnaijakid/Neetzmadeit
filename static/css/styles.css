@@ -419,6 +419,38 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.02em;
 }
 
+.how-to-order-modal {
+    border-radius: 1.4rem;
+    background: #FFF9F1;
+    color: #7F6152;
+    box-shadow: 0 .8rem 1.8rem rgba(92, 36, 52, .18);
+}
+
+.how-to-order-modal .modal-title {
+    color: #5C2434;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.how-to-order-steps {
+    display: grid;
+    gap: .85rem;
+    margin: 0;
+    padding-left: 1.5rem;
+    line-height: 1.55;
+}
+
+.how-to-order-steps li::marker {
+    color: #B86F52;
+    font-weight: 700;
+}
+
+.how-to-order-question {
+    margin-top: 1.25rem;
+    color: #5C2434;
+    font-weight: 700;
+}
+
 footer {
     border-color: rgba(127, 97, 82, 0.35) !important;
 }

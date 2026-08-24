@@ -73,15 +73,36 @@ block content %}
     <div class="text-center mt-5">
       <a
         href="{{ url_for('cart') }}"
-        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold"
+        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold mb-3"
         >View Cart</a
       >
-      <a
-        href="{{ url_for('custom_order') }}"
-        class="btn btn-outline-success btn-lg rounded-pill px-5 py-3 fw-bold ms-3"
-        >Place custom order</a
-      >
+      <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+        <button type="button" class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold" data-bs-toggle="modal" data-bs-target="#howToOrderModal">How to Order</button>
+        <a href="{{ url_for('custom_order') }}" class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold">Place custom order</a>
+      </div>
     </div>
   </div>
 </section>
+
+<div class="modal fade" id="howToOrderModal" tabindex="-1" aria-labelledby="howToOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content how-to-order-modal border-0">
+      <div class="modal-header border-0 pb-0">
+        <h2 class="modal-title" id="howToOrderModalLabel">How to Order</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <ol class="how-to-order-steps">
+          <li>Browse the store and add items to your cart.</li>
+          <li>Visit each item's details page to choose your colours and provide any required measurements.</li>
+          <li>At checkout, provide all of your contact information so I can reach you.</li>
+          <li>I'll reach out, preferably through Instagram, if I need any more information.</li>
+          <li>A $10–$15 deposit may sometimes be needed to purchase your colours if I do not already have them on hand.</li>
+          <li>Your order will be delivered in person at a discussed location, where payment for the product will be made.</li>
+        </ol>
+        <p class="how-to-order-question mb-0">Have questions? Feel free to reach out.</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
