@@ -1,17 +1,17 @@
 {% extends 'base.html' %} {% block title %}Admin Login - Neetzmadeit{% endblock
 %} {% block content %}
-<section class="py-5">
-  <div class="container">
+<section class="py-4 py-md-5">
+  <div class="container px-0 px-sm-3">
     <div class="row justify-content-center">
-      <div class="col-md-6 col-lg-4">
-        <div class="card shadow-lg border-0 rounded-4">
-          <div class="card-body p-5">
-            <h2 class="text-center mb-4 fw-bold">Admin Login</h2>
+      <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4 p-md-5">
+            <h2 class="text-center mb-4 fw-bold section-heading">Admin Login</h2>
 
             {% with messages = get_flashed_messages(with_categories=true) %} {%
             if messages %} {% for category, message in messages %}
             <div
-              class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+              class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show rounded-3"
               role="alert"
             >
               {{ message }}
@@ -25,23 +25,25 @@
 
             <form method="POST">
               <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label fw-bold">Username</label>
                 <input
                   type="text"
-                  class="form-control"
+                  class="form-control rounded-pill px-3 custom-form-input"
                   id="username"
                   name="username"
+                  autocomplete="username"
                   required
                 />
               </div>
 
               <div class="mb-4">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label fw-bold">Password</label>
                 <input
                   type="password"
-                  class="form-control"
+                  class="form-control rounded-pill px-3 custom-form-input"
                   id="password"
                   name="password"
+                  autocomplete="current-password"
                   required
                 />
               </div>
@@ -49,18 +51,12 @@
               <div class="d-grid">
                 <button
                   type="submit"
-                  class="btn btn-success btn-lg rounded-pill fw-bold"
+                  class="btn btn-success btn-lg rounded-pill fw-bold py-3 fs-5"
                 >
                   <i class="fas fa-sign-in-alt me-2"></i>Login
                 </button>
               </div>
             </form>
-
-            <div class="text-center mt-4">
-              <small class="text-muted">
-                Default credentials: admin / admin123
-              </small>
-            </div>
           </div>
         </div>
       </div>

@@ -1,52 +1,49 @@
-<div class="container">
+<div class="container px-3 px-sm-4">
   <footer
-    class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top"
+    class="d-flex flex-column flex-md-row justify-content-between align-items-center py-4 my-3 my-md-4 border-top gap-3"
   >
-    <div class="col-md-4 d-flex align-items-center">
-      <a
-        href="/"
-        class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1"
-        aria-label="Bootstrap"
-      >
-        <svg class="bi" width="30" height="24" aria-hidden="true">
-          <use xlink:href="#bootstrap"></use>
-        </svg>
-      </a>
-      <span class="mb-3 mb-md-0 text-body-secondary"
-        >© 2026 Neetzmadeit, Inc</span
+    <div class="d-flex align-items-center text-center text-md-start">
+      <span class="text-body-secondary"
+        >© 2026 Neetzmadeit, Inc. Handmade with love ✿</span
       >
     </div>
-    <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
-      <li class="ms-3">
+    <ul class="nav justify-content-center justify-content-md-end list-unstyled d-flex align-items-center gap-3 mb-0">
+      <li>
         <a
-          class="text-body-secondary"
+          class="text-body-secondary footer-social-link p-2"
           href="https://www.tiktok.com/@neetzmadeit"
           aria-label="TikTok"
-          ><i class="fa-brands fa-tiktok"></i
+          target="_blank"
+          rel="noopener noreferrer"
+          ><i class="fa-brands fa-tiktok fa-lg"></i
         ></a>
       </li>
-      <li class="ms-3">
+      <li>
         <a
-          class="text-body-secondary"
+          class="text-body-secondary footer-social-link p-2"
           href="https://www.instagram.com/https.nita7/"
           aria-label="Instagram"
-          ><i class="fa-brands fa-instagram"></i
+          target="_blank"
+          rel="noopener noreferrer"
+          ><i class="fa-brands fa-instagram fa-lg"></i
         ></a>
       </li>
-      <li class="ms-3">
+      <li>
         <a
-          class="text-body-secondary"
+          class="text-body-secondary footer-social-link p-2"
           href="https://www.youtube.com/@neetzmadeit"
           aria-label="YouTube"
-          ><i class="fa-brands fa-youtube"></i
+          target="_blank"
+          rel="noopener noreferrer"
+          ><i class="fa-brands fa-youtube fa-lg"></i
         ></a>
       </li>
-      <li class="ms-3">
+      <li>
         <a
-          class="text-body-secondary"
+          class="text-body-secondary footer-social-link p-2"
           href="{{ url_for('login') }}"
           aria-label="Admin Login"
-          ><i class="fas fa-user-shield"></i
+          ><i class="fas fa-user-shield fa-lg"></i
         ></a>
       </li>
     </ul>

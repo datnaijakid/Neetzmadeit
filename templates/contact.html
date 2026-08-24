@@ -1,11 +1,11 @@
 {% extends 'base.html' %}{% block title %}Neetzmadeit - Contact{% endblock %} {%
 block content %}
-<section class="py-5">
-  <div class="container">
+<section class="py-3 py-md-5">
+  <div class="container px-0 px-sm-3">
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %}
     <div
-      class="alert alert-{{ category }} alert-dismissible fade show"
+      class="alert alert-{{ category }} alert-dismissible fade show rounded-3"
       role="alert"
     >
       {{ message }}
@@ -17,25 +17,26 @@ block content %}
       ></button>
     </div>
     {% endfor %} {% endif %} {% endwith %}
-    <div class="row align-items-start">
-      <div class="col-md-6 mb-4 text-center">
-        <h1 class="mb-3">Contact Us</h1>
-        <p>
-          Interested in a custom order? I create personalized pieces tailored to
-          your style and needs. Provide details about colors, sizes, materials,
-          and any reference images in your message and I'll get back to you with
-          availability and a quote.
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-5 text-center text-lg-start mb-2 mb-lg-0">
+        <h1 class="display-5 fw-bold section-heading mb-3">Contact Us</h1>
+        <p class="fs-5 text-secondary mb-4">
+          Have questions or want to say hi? Send me a message and I'll get back to you soon!
         </p>
+        <div class="d-none d-lg-block p-4 rounded-4 shadow-sm" style="background: rgba(255, 249, 241, 0.6); border: 1px solid rgba(127, 97, 82, 0.2);">
+          <h5 class="fw-bold text-success mb-2">✿ Looking for a Custom Piece?</h5>
+          <p class="mb-0 text-muted small">You can also use our dedicated <a href="{{ url_for('custom_order') }}" class="text-decoration-underline text-success fw-bold">Custom Order Portal</a> to describe exactly what you'd like made.</p>
+        </div>
       </div>
-      <div class="col-md-6">
-        <div class="card shadow-lg border-0">
-          <div class="card-body p-4">
+      <div class="col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4 p-md-5">
             <form method="POST" action="{{ url_for('contact') }}">
               <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label fw-bold">Name <span class="text-danger">*</span></label>
                 <input
                   type="text"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="name"
                   name="name"
                   placeholder="Your name"
@@ -43,23 +44,23 @@ block content %}
                 />
               </div>
               <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
+                <label for="email" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
                 <input
                   type="email"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="email"
                   name="email"
                   placeholder="you@example.com"
                   required
                 />
               </div>
-              <div class="mb-3">
-                <label for="message" class="form-label">Message</label>
+              <div class="mb-4">
+                <label for="message" class="form-label fw-bold">Message <span class="text-danger">*</span></label>
                 <textarea
-                  class="form-control rounded px-3 shadow-sm"
+                  class="form-control rounded-4 px-3 py-3 shadow-sm custom-form-input"
                   id="message"
                   name="message"
-                  rows="6"
+                  rows="5"
                   placeholder="Write your message here..."
                   required
                 ></textarea>
@@ -67,7 +68,7 @@ block content %}
               <div class="d-grid">
                 <button
                   type="submit"
-                  class="btn btn-success rounded-pill px-4 fw-bold"
+                  class="btn btn-success rounded-pill px-4 fw-bold py-3 fs-5"
                 >
                   Send Message
                 </button>

@@ -1,8 +1,8 @@
 {% extends 'base.html' %} {% block title %}{{ product.name }} - Neetzmadeit{%
 endblock %} {% block content %}
-<section class="py-5">
-  <div class="container">
-    <nav aria-label="breadcrumb" class="mb-4">
+<section class="py-3 py-md-5">
+  <div class="container px-0 px-sm-3">
+    <nav aria-label="breadcrumb" class="mb-3 mb-md-4">
       <ol class="breadcrumb">
         <li class="breadcrumb-item">
           <a href="{{ url_for('home') }}">Home</a>
@@ -16,12 +16,12 @@ endblock %} {% block content %}
       </ol>
     </nav>
 
-    <div class="row g-5">
+    <div class="row g-4 g-lg-5">
       <div class="col-lg-6">
         {% if images %}
         <div
           id="productCarousel"
-          class="carousel slide shadow-lg rounded-4 overflow-hidden"
+          class="carousel slide shadow-sm rounded-4 overflow-hidden"
           data-bs-ride="carousel"
         >
           <div class="carousel-inner">
@@ -29,9 +29,8 @@ endblock %} {% block content %}
             <div class="carousel-item {% if loop.first %}active{% endif %}">
               <img
                 src="{{ url_for('static', filename='assets/img/' + image) }}"
-                class="d-block w-100"
+                class="d-block w-100 product-detail-image"
                 alt="{{ product.name }}"
-                style="height: 500px; object-fit: cover"
               />
             </div>
             {% endfor %}
@@ -57,21 +56,22 @@ endblock %} {% block content %}
             <span class="visually-hidden">Next</span>
           </button>
 
-          <div class="carousel-indicators position-static mt-3">
+          <div class="carousel-indicators position-static mt-3 d-flex flex-wrap justify-content-center gap-2">
             {% for image in images %}
             <button
               type="button"
               data-bs-target="#productCarousel"
               data-bs-slide-to="{{ loop.index0 }}"
-              class="{% if loop.first %}active{% endif %}"
+              class="{% if loop.first %}active{% endif %} p-0 border-0 rounded overflow-hidden"
               aria-current="true"
               aria-label="Slide {{ loop.index }}"
+              style="width: 55px; height: 55px;"
             >
               <img
                 src="{{ url_for('static', filename='assets/img/' + image) }}"
-                class="d-block w-100 rounded"
+                class="d-block w-100 h-100 rounded"
                 alt="Thumbnail {{ loop.index }}"
-                style="height: 60px; object-fit: cover"
+                style="object-fit: cover"
               />
             </button>
             {% endfor %}
@@ -79,61 +79,60 @@ endblock %} {% block content %}
           {% endif %}
         </div>
         {% else %}
-        <div class="card shadow-lg rounded-4 overflow-hidden">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
           <img
             src="{{ url_for('static', filename='assets/img/placeholder.jpg') }}"
-            class="card-img-top"
+            class="card-img-top product-detail-image"
             alt="{{ product.name }}"
-            style="height: 500px; object-fit: cover"
           />
         </div>
         {% endif %}
       </div>
 
       <div class="col-lg-6">
-        <div class="card shadow-lg border-0 rounded-4">
-          <div class="card-body p-5">
-            <h1 class="display-5 fw-bold mb-3">{{ product.name }}</h1>
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-4 p-md-5">
+            <h1 class="display-6 fw-bold mb-2">{{ product.name }}</h1>
 
             {% if product.is_featured %}
-            <span class="badge bg-warning mb-3 fs-6">Featured Product</span>
+            <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fs-6">Featured Product</span>
             {% endif %}
 
-            <div class="mb-4">
-              <span class="display-4 text-success fw-bold"
+            <div class="mb-3 mb-md-4">
+              <span class="display-5 text-success fw-bold"
                 >${{ "%.2f"|format(product.price) }}</span
               >
             </div>
 
             <div class="mb-4">
-              <h4 class="fw-bold mb-3">Description</h4>
+              <h4 class="fw-bold mb-2">Description</h4>
               <p class="fs-5 text-muted lh-base">{{ product.description }}</p>
             </div>
 
             <div class="d-grid gap-3">
               <a
                 href="{{ url_for('add_to_cart', product_id=product.id) }}"
-                class="btn btn-success btn-lg rounded-pill py-3 fw-bold"
+                class="btn btn-success btn-lg rounded-pill py-3 fw-bold fs-5"
               >
                 <i class="fas fa-cart-plus me-2"></i>Add to Cart - ${{
                 "%.2f"|format(product.price) }}
               </a>
 
               <div class="row g-2">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-sm-6">
                   <a
                     href="{{ url_for('shop') }}"
-                    class="btn btn-outline-secondary btn-lg rounded-pill w-100"
+                    class="btn btn-outline-secondary btn-lg rounded-pill w-100 py-2 py-sm-3 fw-bold"
                   >
-                    <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                    <i class="fas fa-arrow-left me-2"></i>Shop
                   </a>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-sm-6">
                   <a
                     href="{{ url_for('cart') }}"
-                    class="btn btn-outline-primary btn-lg rounded-pill w-100"
+                    class="btn btn-outline-primary btn-lg rounded-pill w-100 py-2 py-sm-3 fw-bold"
                   >
-                    <i class="fas fa-shopping-cart me-2"></i>View Cart
+                    <i class="fas fa-shopping-bag me-2"></i>View Cart
                   </a>
                 </div>
               </div>
@@ -145,29 +144,28 @@ endblock %} {% block content %}
 
     <!-- Related Products Section -->
     {% if all_products %}
-    <div class="mt-5">
-      <h3 class="text-center mb-4 fw-bold">You Might Also Like</h3>
-      <div class="row g-4">
+    <div class="mt-5 pt-3">
+      <h3 class="text-center mb-4 fw-bold section-heading">You Might Also Like</h3>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 g-md-4">
         {% for related_product in all_products %}
-        <div class="col-lg-3 col-md-6">
-          <div class="card shadow-lg border-0 rounded-4 h-100">
+        <div class="col">
+          <div class="card shadow-sm border-0 rounded-4 h-100 shop-product-card">
             {% set rel_images = related_product.images | from_json %} {% set
             rel_main_image = rel_images[0] if rel_images else 'placeholder.jpg'
             %}
             <img
               src="{{ url_for('static', filename='assets/img/' + rel_main_image) }}"
-              class="card-img-top"
+              class="card-img-top shop-product-image"
               alt="{{ related_product.name }}"
-              style="height: 200px; object-fit: cover"
             />
-            <div class="card-body text-center">
-              <h6 class="card-title fw-bold">{{ related_product.name }}</h6>
-              <p class="text-success fw-bold mb-3">
+            <div class="card-body text-center p-3 d-flex flex-column">
+              <h6 class="card-title fw-bold mb-2">{{ related_product.name }}</h6>
+              <p class="text-success fw-bold mb-3 flex-grow-1">
                 ${{ "%.2f"|format(related_product.price) }}
               </p>
               <a
                 href="{{ url_for('product_detail', product_id=related_product.id) }}"
-                class="btn btn-outline-success rounded-pill"
+                class="btn btn-outline-success rounded-pill fw-bold"
                 >View Details</a
               >
             </div>

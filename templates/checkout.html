@@ -1,9 +1,9 @@
 {% extends 'base.html' %} {% block title %}Checkout - Neetzmadeit{% endblock %}
 {% block content %}
-<section class="py-5">
-  <div class="container">
-    <div class="text-center mb-5">
-      <h1 class="display-5 fw-bold">Review Your Order</h1>
+<section class="py-3 py-md-5">
+  <div class="container px-0 px-sm-3">
+    <div class="text-center mb-4 mb-md-5">
+      <h1 class="display-5 fw-bold section-heading">Review Your Order</h1>
       <p class="fs-5 text-secondary">
         Review your items below and provide your contact information to complete
         your order.
@@ -12,11 +12,11 @@
 
     <div class="row g-4">
       <div class="col-lg-7">
-        <div class="card shadow-lg border-0">
-          <div class="card-body p-4">
-            <h3 class="fw-bold mb-4">Order Items</h3>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+          <div class="card-body p-3 p-md-4">
+            <h3 class="fw-bold mb-3 mb-md-4">Order Items</h3>
             <div class="table-responsive">
-              <table class="table align-middle cart-table">
+              <table class="table align-middle cart-table mb-0">
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -29,21 +29,22 @@
                   {% for item in cart_items %}
                   <tr class="cart-item-row">
                     <td>
-                      <div class="d-flex align-items-center gap-3">
+                      <div class="d-flex align-items-center gap-2 gap-sm-3">
                         <img
                           src="{{ url_for('static', filename='assets/img/' ~ item.image) }}"
                           alt="{{ item.name }}"
-                          width="80"
-                          class="rounded-3 border"
+                          width="60"
+                          height="60"
+                          class="rounded-3 border object-fit-cover"
                         />
                         <div>
-                          <h6 class="mb-1">{{ item.name }}</h6>
+                          <h6 class="mb-1 fw-bold fs-6">{{ item.name }}</h6>
                         </div>
                       </div>
                     </td>
-                    <td class="text-end">${{ '%.2f' | format(item.price) }}</td>
+                    <td class="text-end text-nowrap">${{ '%.2f' | format(item.price) }}</td>
                     <td class="text-center">{{ item.quantity }}</td>
-                    <td class="text-end">
+                    <td class="text-end text-nowrap fw-bold">
                       ${{ '%.2f' | format(item.subtotal) }}
                     </td>
                   </tr>
@@ -51,40 +52,41 @@
                 </tbody>
               </table>
             </div>
-            <div class="text-end mt-3">
-              <p class="fs-5 mb-1">Order Total:</p>
-              <h3 class="fw-bold">${{ '%.2f' | format(total) }}</h3>
+            <div class="text-end mt-3 pt-3 border-top">
+              <p class="fs-6 mb-0 text-muted">Order Total:</p>
+              <h3 class="fw-bold text-success mb-0">${{ '%.2f' | format(total) }}</h3>
             </div>
           </div>
         </div>
       </div>
 
       <div class="col-lg-5">
-        <div class="card shadow-lg border-0">
-          <div class="card-body p-4">
-            <h3 class="fw-bold mb-4">Contact Information</h3>
+        <div class="card shadow-sm border-0 rounded-4">
+          <div class="card-body p-3 p-md-4">
+            <h3 class="fw-bold mb-3">Contact Information</h3>
+            <p class="text-muted small mb-3">Please provide your details so I can arrange delivery and payment.</p>
             <form method="POST" action="{{ url_for('checkout') }}">
               <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label fw-bold">Your Name <span class="text-danger">*</span></label>
                 <input
                   type="text"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="name"
                   name="name"
-                  placeholder="Your name"
+                  placeholder="What should I call you?"
                   required
                 />
               </div>
 
-              <p class="fw-bold mb-3 mt-4">
-                How can we reach you? (select at least one)
+              <p class="fw-bold mb-2 mt-4 small text-uppercase text-secondary" style="letter-spacing: 0.08em;">
+                Choose at least one contact method:
               </p>
 
               <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
                 <input
                   type="email"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="email"
                   name="email"
                   placeholder="you@example.com"
@@ -95,7 +97,7 @@
                 <label for="phone" class="form-label">Phone Number</label>
                 <input
                   type="tel"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="phone"
                   name="phone"
                   placeholder="(123) 456-7890"
@@ -108,10 +110,10 @@
                 >
                 <input
                   type="text"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="instagram"
                   name="instagram"
-                  placeholder="@yourinsta"
+                  placeholder="@yourhandle"
                 />
               </div>
 
@@ -119,30 +121,30 @@
                 <label for="tiktok" class="form-label">TikTok Handle</label>
                 <input
                   type="text"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="tiktok"
                   name="tiktok"
-                  placeholder="@yourtiktok"
+                  placeholder="@yourhandle"
                 />
               </div>
 
               <div class="mb-4">
                 <label for="other" class="form-label"
-                  >Other Contact Method</label
+                  >Other Contact Method / Notes</label
                 >
                 <input
                   type="text"
-                  class="form-control rounded-pill px-3 shadow-sm"
+                  class="form-control rounded-pill px-3 shadow-sm custom-form-input"
                   id="other"
                   name="other"
-                  placeholder="Discord, Snapchat, website, etc."
+                  placeholder="Discord, location preferences, etc."
                 />
               </div>
 
               <div class="d-grid">
                 <button
                   type="submit"
-                  class="btn btn-success rounded-pill px-4 fw-bold py-3"
+                  class="btn btn-success rounded-pill px-4 fw-bold py-3 fs-5 shadow-sm"
                 >
                   Place Order
                 </button>

@@ -1,8 +1,8 @@
 {% extends 'base.html' %} {% block title %}Shop - Neetzmadeit{% endblock %} {%
 block content %}
-<section class="py-5">
-  <div class="container">
-    <div class="text-center mb-5">
+<section class="py-3 py-md-5">
+  <div class="container px-0 px-sm-3">
+    <div class="text-center mb-4 mb-md-5">
       <h1 class="display-5 fw-bold section-heading">Shop the collection</h1>
       <p class="fs-5 text-secondary mb-3">
         Select your favorite handmade pieces and add them to your cart.
@@ -26,20 +26,19 @@ block content %}
     </div>
 
     {% if products %}
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3 g-md-4">
       {% for product in products %} {% set images = product.images | from_json
       %} {% set main_image = images[0] if images else 'placeholder.jpg' %}
       <div class="col">
-        <div class="card shop-product-card h-100 border-0">
+        <div class="card shop-product-card h-100 border-0 shadow-sm">
           <img
             src="{{ url_for('static', filename='assets/img/' + main_image) }}"
             class="card-img-top shop-product-image"
             alt="{{ product.name }}"
-            style="height: 280px; object-fit: cover"
           />
-          <div class="card-body text-center">
-            <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text text-muted mb-3">
+          <div class="card-body text-center p-3 p-md-4 d-flex flex-column">
+            <h5 class="card-title mb-2">{{ product.name }}</h5>
+            <p class="card-text text-muted mb-3 flex-grow-1">
               {{ product.description[:80] }}{% if product.description|length >
               80 %}...{% endif %}
             </p>
@@ -49,12 +48,12 @@ block content %}
             <div class="d-grid gap-2">
               <a
                 href="{{ url_for('product_detail', product_id=product.id) }}"
-                class="btn btn-outline-success rounded-pill fw-bold"
+                class="btn btn-outline-success rounded-pill fw-bold py-2"
                 >View Details</a
               >
               <a
                 href="{{ url_for('add_to_cart', product_id=product.id) }}"
-                class="btn btn-success rounded-pill fw-bold"
+                class="btn btn-success rounded-pill fw-bold py-2"
                 >Add to Cart</a
               >
             </div>
@@ -69,7 +68,7 @@ block content %}
         class="card shadow-lg border-0 rounded-4 mx-auto"
         style="max-width: 500px"
       >
-        <div class="card-body p-5">
+        <div class="card-body p-4 p-md-5">
           <i class="fas fa-box-open fa-4x text-muted mb-4"></i>
           <h3 class="text-muted mb-3">No Products Available</h3>
           <p class="text-muted mb-4">
@@ -77,7 +76,7 @@ block content %}
           </p>
           <a
             href="{{ url_for('custom_order') }}"
-            class="btn btn-success btn-lg rounded-pill"
+            class="btn btn-success btn-lg rounded-pill px-4 py-2"
           >
             <i class="fas fa-paint-brush me-2"></i>Custom Order Instead
           </a>
@@ -86,10 +85,10 @@ block content %}
     </div>
     {% endif %}
 
-    <div class="text-center mt-5 pt-3">
+    <div class="text-center mt-4 mt-md-5 pt-2">
       <a
         href="{{ url_for('cart') }}"
-        class="btn btn-success btn-lg rounded-pill px-5 py-3 fw-bold view-cart-btn"
+        class="btn btn-success btn-lg rounded-pill px-4 px-md-5 py-3 fw-bold view-cart-btn"
       >
         <i class="fas fa-shopping-bag me-2"></i>View Cart
       </a>
@@ -98,10 +97,10 @@ block content %}
 </section>
 
 <div class="modal fade" id="howToOrderModal" tabindex="-1" aria-labelledby="howToOrderModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content how-to-order-modal border-0">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content how-to-order-modal border-0 p-2 p-md-3">
       <div class="modal-header border-0 pb-0">
-        <h2 class="modal-title" id="howToOrderModalLabel">How to Order</h2>
+        <h2 class="modal-title fs-3" id="howToOrderModalLabel">How to Order</h2>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body pt-3">
@@ -113,7 +112,7 @@ block content %}
           <li>A $10–$15 deposit may sometimes be needed to purchase your colours if I do not already have them on hand.</li>
           <li>Your order will be delivered in person at a discussed location, where payment for the product will be made.</li>
         </ol>
-        <p class="how-to-order-question mb-0">Have questions? Feel free to reach out.</p>
+        <p class="how-to-order-question mb-0 mt-3">Have questions? Feel free to reach out.</p>
       </div>
     </div>
   </div>
