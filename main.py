@@ -19,9 +19,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, 'templates'),
+    static_folder=os.path.join(BASE_DIR, 'static')
+)
 app.config['SECRET_KEY'] = b'\xee\xf8\xdb>\xf2\xda\xea,\x1e&\x10\xca\xa2\x0c\n3"-\x11&\'\xdf&\x0e'
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'assets', 'img')
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'assets', 'img')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
 ckeditor = CKEditor(app)
@@ -32,6 +38,23 @@ try:
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 except Exception:
     pass
+
+@app.errorhandler(500)
+def server_error(e):
+    import traceback
+    tb = traceback.format_exc()
+    print("[FLASK 500 ERROR]", tb)
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Server Error - Neetzmadeit</title></head>
+    <body style="font-family: monospace; padding: 2rem; background: #faf8f5; color: #333;">
+        <h2>Neetzmadeit Server Diagnostic</h2>
+        <p>A server error occurred. Details:</p>
+        <pre style="background: #fff; border: 1px solid #ccc; padding: 1rem; border-radius: 6px; overflow-x: auto;">{tb}</pre>
+    </body>
+    </html>
+    """, 500
 
 def send_web3forms(form_data):
     """
