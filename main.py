@@ -56,6 +56,21 @@ def server_error(e):
     </html>
     """, 500
 
+# WSGI Middleware to handle Vercel Serverless rewrites seamlessly
+class VercelWSGIMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO', '')
+        if path.startswith('/api/index'):
+            environ['PATH_INFO'] = path[len('/api/index'):] or '/'
+        elif path == '/api':
+            environ['PATH_INFO'] = '/'
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelWSGIMiddleware(app.wsgi_app)
+
 def send_web3forms(form_data):
     """
     Sends form data using the Web3Forms API (https://api.web3forms.com/submit).
