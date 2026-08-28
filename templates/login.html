@@ -8,21 +8,6 @@
           <div class="card-body p-4 p-md-5">
             <h2 class="text-center mb-4 fw-bold section-heading">Admin Login</h2>
 
-            {% with messages = get_flashed_messages(with_categories=true) %} {%
-            if messages %} {% for category, message in messages %}
-            <div
-              class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show rounded-3"
-              role="alert"
-            >
-              {{ message }}
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-              ></button>
-            </div>
-            {% endfor %} {% endif %} {% endwith %}
-
             <form method="POST">
               <div class="mb-3">
                 <label for="username" class="form-label fw-bold">Username</label>

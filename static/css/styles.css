@@ -852,3 +852,51 @@ footer .text-body-secondary {
   color: var(--color-accent) !important;
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   Alert Notifications & Toast Feedback
+   ========================================================================== */
+.alert {
+  border-radius: 1rem;
+  border: 1.5px solid transparent;
+  padding: 0.95rem 1.35rem;
+  font-weight: 500;
+  box-shadow: 0 0.5rem 1.5rem rgba(92, 36, 52, 0.08);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.alert-success {
+  background-color: #FCE7EA !important;
+  border-color: #F3B6C2 !important;
+  color: #5C2434 !important;
+}
+
+.alert-success .btn-close {
+  filter: none;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.alert-success .btn-close:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.alert-danger, .alert-error {
+  background-color: #FADBD8 !important;
+  border-color: #F5B7B1 !important;
+  color: #78281F !important;
+}
+
+.alert-warning {
+  background-color: #FCF3CF !important;
+  border-color: #F9E79F !important;
+  color: #7D6608 !important;
+}
+
+.alert-info {
+  background-color: #E8F8F5 !important;
+  border-color: #A3E4D7 !important;
+  color: #117864 !important;
+}
+

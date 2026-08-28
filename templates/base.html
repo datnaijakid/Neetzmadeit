@@ -27,10 +27,19 @@
       {% with messages = get_flashed_messages(with_categories=true) %} {% if
       messages %} {% for category, message in messages %}
       <div
-        class="alert alert-{{ category }} alert-dismissible fade show rounded-3 shadow-sm"
+        class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show rounded-4 shadow-sm d-flex align-items-center"
         role="alert"
       >
-        {{ message }}
+        {% if category == 'success' %}
+        <i class="fas fa-heart me-2" style="color: #B86F52;"></i>
+        {% elif category == 'danger' or category == 'error' %}
+        <i class="fas fa-exclamation-circle text-danger me-2"></i>
+        {% elif category == 'warning' %}
+        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+        {% else %}
+        <i class="fas fa-info-circle text-info me-2"></i>
+        {% endif %}
+        <div>{{ message }}</div>
         <button
           type="button"
           class="btn-close"
@@ -49,5 +58,26 @@
       src="https://kit.fontawesome.com/1af1b13137.js"
       crossorigin="anonymous"
     ></script>
+    <script>
+      // Auto-dismiss alert notifications after 3 seconds with smooth fade-out
+      document.addEventListener('DOMContentLoaded', function () {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alertEl) {
+          setTimeout(function () {
+            alertEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            alertEl.style.opacity = '0';
+            alertEl.style.transform = 'translateY(-8px)';
+            setTimeout(function () {
+              try {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alertEl);
+                bsAlert.close();
+              } catch (e) {
+                alertEl.remove();
+              }
+            }, 500);
+          }, 3000);
+        });
+      });
+    </script>
   </body>
 </html>
